@@ -294,10 +294,24 @@
       word-break: break-all;
       vertical-align: middle;
     }
-    .dashboard-table td:first-child, .dashboard-table th:first-child {
-      color: #20222c;
-      font-weight: 700;
+    /* --- NEW/MODIFIED STYLES FOR READABILITY --- */
+    .dashboard-table td.agent-name {
+      color: #1a1a1a; /* Darker color for better contrast */
+      font-weight: 800; /* Slightly bolder */
+      font-size: 1.08rem; /* Slightly larger */
+      background: #f3f3f8; /* Consistent background for names */
+      white-space: nowrap; /* Prevent text wrapping */
+      word-break: normal; /* Ensure normal word breaking if space allows */
     }
+    .dashboard-table td.agent-email {
+      color: #333; /* Keep it dark */
+      font-weight: 700; /* Bolder */
+      background: #f3f3f8; /* Keep the light background */
+      font-size: 1.02rem; /* Slightly smaller than name, but still clear */
+      word-break: break-all; /* Ensure long emails wrap */
+    }
+    /* --- END NEW/MODIFIED STYLES --- */
+
     .grand-total {
       font-weight: 900;
       color: #e7c873;
@@ -476,13 +490,31 @@
     });
 
     function captureTable(name) {
-      const tableDiv = document.getElementById('dashboard-table-container');
-      html2canvas(tableDiv, {
+      const tableWrapper = document.getElementById('dashboard-table-container');
+      const tableElement = tableWrapper.querySelector('.dashboard-table'); // Get the actual table inside the wrapper
+
+      if (!tableElement) {
+        alert('No table found to capture.');
+        return;
+      }
+
+      // Temporarily remove overflow-x to ensure html2canvas captures full width
+      const originalOverflowX = tableWrapper.style.overflowX;
+      tableWrapper.style.overflowX = 'visible';
+
+      html2canvas(tableElement, { // Capture the tableElement, not the wrapper
         backgroundColor: null,
         scale: 2,
-        useCORS: true
+        useCORS: true,
+        // These options help capture the full scrollable content
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: tableElement.scrollWidth,
+        windowHeight: tableElement.scrollHeight
       }).then(canvas => {
-        // Check if the Clipboard API is available
+        // Restore original overflow-x
+        tableWrapper.style.overflowX = originalOverflowX;
+
         if (navigator.clipboard && navigator.clipboard.write) {
           canvas.toBlob(function(blob) {
             const item = new ClipboardItem({ "image/png": blob });
@@ -494,16 +526,13 @@
             });
           }, 'image/png');
         } else {
-          // Fallback for browsers that do not support ClipboardItem (e.g., Firefox)
-          // You might consider a different fallback, like offering a download or
-          // instructing the user to right-click and copy.
           alert('Your browser does not support copying images directly to the clipboard. Please right-click on the table and select "Copy Image" or use the download option if available.');
-          // Original download functionality as a fallback (optional)
-          // let link = document.createElement('a');
-          // link.download = `${name}_${(new Date().toISOString().replace(/[:.]/g,'-'))}.png`;
-          // link.href = canvas.toDataURL();
-          // link.click();
         }
+      }).catch(error => {
+        // Restore original overflow-x in case of error
+        tableWrapper.style.overflowX = originalOverflowX;
+        console.error('Error capturing table:', error);
+        alert('An error occurred while capturing the table.');
       });
     }
 
@@ -624,8 +653,8 @@
             <tbody>
               ${agents.map(agent => `
                 <tr>
-                  <td>${agent.name}</td>
-                  <td style="font-weight:700;color:#333;background:#f3f3f8;">${agent.email}</td>
+                  <td class="agent-name">${agent.name}</td>
+                  <td class="agent-email">${agent.email}</td>
                   <td>${agent.im_volume}</td>
                   <td>${agent.ticket_handle}</td>
                   <td class="grand-total">${agent.im_volume + agent.ticket_handle}</td>
@@ -711,7 +740,7 @@
           const agent = agentMap[agentKeyStr];
           let grandTotal = agentGrandTotal(agentKeyStr);
           html += `<tr>
-            <td class="hourly-header" style="font-weight:700;color:#333;background:#f3f3f8;">${agent.name}</td>`;
+            <td class="agent-name">${agent.name}</td>`;
           allIntervals.forEach((interval, i) => {
             const metrics = agent.intervals[interval] || {im_volume: 0, ticket_handle: 0};
             html += `<td class="hourly-metric${i%2===0?'0':'1'}">${metrics.im_volume ? metrics.im_volume : ''}</td>`;
