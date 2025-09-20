@@ -7,6 +7,7 @@
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <style>
@@ -46,10 +47,6 @@
       font-family: 'Inter', Arial, sans-serif;
       color: var(--table-font);
       min-height: 100vh;
-    }
-    body {
-      background: var(--bg);
-      background-attachment: fixed;
     }
     .dashboard-container {
       background: var(--card-glass);
@@ -170,6 +167,8 @@
       box-shadow: 0 2.5px 11px #e7c87314;
       border: 2px solid #e7c87377;
       overflow: hidden;
+      align-items: center;
+      position: relative;
     }
     .tab-btn {
       flex: 1;
@@ -186,6 +185,8 @@
       transition: background 0.13s, color 0.11s;
       text-transform: uppercase;
       border-radius: 0;
+      position: relative;
+      z-index: 1;
     }
     .tab-btn:last-child { border-right: none; }
     .tab-btn:hover:not(.active) {
@@ -203,7 +204,29 @@
       position: relative;
       text-shadow: 0 1px 4px #fff4;
     }
-    /* Table styles */
+    .capture-btn {
+      margin-left: 12px;
+      padding: 8px 18px;
+      border-radius: 10px;
+      border: none;
+      background: linear-gradient(92deg,#ffe066 40%,#5eead4 100%);
+      color: #23243e;
+      font-weight: 900;
+      font-size: 1rem;
+      letter-spacing: .8px;
+      box-shadow: 0 2px 10px #e7c87322;
+      cursor: pointer;
+      transition: background 0.18s, color 0.12s, box-shadow 0.13s;
+      outline: none;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .capture-btn:hover, .capture-btn:focus {
+      background: linear-gradient(90deg,#5eead4 10%,#ffe066 100%);
+      color: #222;
+      box-shadow: 0 4px 19px #5eead433;
+      transform: scale(1.03);
+    }
     .dashboard-table-wrapper {
       background: var(--card);
       border-radius: 18px;
@@ -351,45 +374,14 @@
     .hourly-metric1 { background: #ffe6e022; }
     .grand-total-hour {
       background: #fffbe9 !important;
-      color: #e7c873 !important;
+      color: #222 !important; /* BLACK FONT FOR GRAND TOTAL */
       font-weight: 900;
       text-align: center;
       font-size: 1.12rem;
       border-radius: 8px;
       border: 2px solid #ffe06688;
-      text-shadow: 0 1.5px 5px #e7c87344;
+      text-shadow: none;
     }
-    /* FULLSCREEN: Shrink fonts and padding to fit everything in one screen - NO SCROLL */
-    .fullscreen-hourly .dashboard-table-wrapper {
-      overflow-x: visible !important;
-      padding: 6px 0 !important;
-      background: var(--card-glass);
-    }
-    .fullscreen-hourly .dashboard-table {
-      font-size: .91rem !important;
-      min-width: 0 !important;
-      table-layout: fixed !important;
-      width: 100vw !important;
-      margin: 0;
-    }
-    .fullscreen-hourly .dashboard-table th,
-    .fullscreen-hourly .dashboard-table td {
-      padding: 7px 2px !important;
-      font-size: .93rem !important;
-      min-width: 22px !important;
-      max-width: 70px;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-    .fullscreen-hourly .dashboard-table th {
-      font-size: 1.01rem !important;
-    }
-    .fullscreen-hourly .grand-total-hour {
-      font-size: 1rem !important;
-      padding: 5px 2px !important;
-    }
-    /* Responsive */
     @media (max-width: 650px) {
       .dashboard-header { flex-direction: column; align-items: flex-start; gap: 7px; }
       .dashboard-header h1 { font-size: 1.1rem;}
@@ -404,9 +396,6 @@
       .grand-total, .grand-total-hour { font-size: 0.88rem; padding: 4px 7px;}
       .no-data { padding: 13px 0; font-size: 0.89rem;}
       .dashboard-container { padding: 9px 1vw;}
-    }
-    .fullscreen-hourly .dashboard-table-wrapper {
-      overflow-x: visible;
     }
   </style>
 </head>
@@ -427,10 +416,15 @@
       </div>
     </div>
     <div class="tab-bar" id="tab-bar">
-      <button class="tab-btn active" data-tab="summary">Agent Summary</button>
-      <button class="tab-btn" data-tab="hourly">Hourly Interval</button>
+      <div style="display: flex; width: 100%;">
+        <button class="tab-btn active" data-tab="summary" id="tab-summary-btn">Agent Summary</button>
+        <button class="capture-btn" id="capture-summary-btn" title="Capture table as image" tabindex="0" style="margin-left: 0;">📸 Capture</button>
+      </div>
+      <div style="display: flex; width: 100%;">
+        <button class="tab-btn" data-tab="hourly" id="tab-hourly-btn">Hourly Interval</button>
+        <button class="capture-btn" id="capture-hourly-btn" title="Capture table as image" tabindex="0" style="margin-left: 0;">📸 Capture</button>
+      </div>
     </div>
-    <div id="fullscreen-button-area"></div>
     <div class="dashboard-table-wrapper" id="dashboard-table-container"></div>
   </div>
   <script>
@@ -444,17 +438,25 @@
     let filteredData = [];
     let currentTab = "summary";
     let intervalColumnKey = null;
-    let isHourlyFullscreen = false;
 
-    document.querySelectorAll('.tab-btn').forEach(tab => {
-      tab.addEventListener('click', function() {
-        document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
-        this.classList.add('active');
-        currentTab = this.getAttribute('data-tab');
-        toggleFullscreenButton();
-        renderTable();
-      });
+    // Tab switching
+    document.getElementById('tab-summary-btn').addEventListener('click', function() {
+      setActiveTab('summary');
     });
+    document.getElementById('tab-hourly-btn').addEventListener('click', function() {
+      setActiveTab('hourly');
+    });
+
+    function setActiveTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+      if(tab === 'summary') {
+        document.getElementById('tab-summary-btn').classList.add('active');
+      } else {
+        document.getElementById('tab-hourly-btn').classList.add('active');
+      }
+      currentTab = tab;
+      renderTable();
+    }
 
     document.querySelector('#file-upload').addEventListener('change', handleFile, false);
     document.querySelector('.file-label').addEventListener('click', () => {
@@ -463,34 +465,28 @@
     document.getElementById('email-search').addEventListener('input', renderTable);
     document.getElementById('date-filter').addEventListener('input', renderTable);
 
-    // Fullscreen controls
-    function toggleFullscreenButton() {
-      const btnArea = document.getElementById('fullscreen-button-area');
-      btnArea.innerHTML = '';
-      if (currentTab === 'hourly') {
-        const btn = document.createElement('button');
-        btn.className = 'file-label';
-        btn.style.background = "linear-gradient(92deg, #ffe066 30%, #5eead4 100%)";
-        btn.style.margin = "12px 0";
-        btn.innerText = isHourlyFullscreen ? 'Exit Full Screen' : 'Full Screen View';
-        btn.onclick = function() {
-          isHourlyFullscreen = !isHourlyFullscreen;
-          updateFullscreen();
-        };
-        btnArea.appendChild(btn);
-      }
-    }
-    function updateFullscreen() {
-      const container = document.getElementById('dashboard-container');
-      if (currentTab === 'hourly' && isHourlyFullscreen) {
-        container.classList.add('fullscreen-hourly');
-        document.body.style.overflow = 'hidden';
-      } else {
-        container.classList.remove('fullscreen-hourly');
-        document.body.style.overflow = '';
-      }
-      toggleFullscreenButton();
-      renderTable();
+    // CAPTURE BUTTONS
+    document.getElementById('capture-summary-btn').addEventListener('click', function() {
+      if(currentTab !== 'summary') setActiveTab('summary');
+      setTimeout(() => captureTable('Agent_Summary'), 100); // Wait for DOM update
+    });
+    document.getElementById('capture-hourly-btn').addEventListener('click', function() {
+      if(currentTab !== 'hourly') setActiveTab('hourly');
+      setTimeout(() => captureTable('Hourly_Interval'), 100);
+    });
+
+    function captureTable(name) {
+      const tableDiv = document.getElementById('dashboard-table-container');
+      html2canvas(tableDiv, {
+        backgroundColor: null,
+        scale: 2,
+        useCORS: true
+      }).then(canvas => {
+        let link = document.createElement('a');
+        link.download = `${name}_${(new Date().toISOString().replace(/[:.]/g,'-'))}.png`;
+        link.href = canvas.toDataURL();
+        link.click();
+      });
     }
 
     // Data extraction
@@ -710,7 +706,8 @@
       wrapper.innerHTML = html;
     }
 
-    toggleFullscreenButton();
+    // Initial render
+    renderTable();
   </script>
 </body>
 </html>
