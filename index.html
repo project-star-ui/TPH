@@ -418,11 +418,11 @@
     <div class="tab-bar" id="tab-bar">
       <div style="display: flex; width: 100%;">
         <button class="tab-btn active" data-tab="summary" id="tab-summary-btn">Agent Summary</button>
-        <button class="capture-btn" id="capture-summary-btn" title="Capture table as image" tabindex="0" style="margin-left: 0;">📸 Capture</button>
+        <button class="capture-btn" id="capture-summary-btn" title="Copy table as image to clipboard" tabindex="0" style="margin-left: 0;">📸 Copy Image</button>
       </div>
       <div style="display: flex; width: 100%;">
         <button class="tab-btn" data-tab="hourly" id="tab-hourly-btn">Hourly Interval</button>
-        <button class="capture-btn" id="capture-hourly-btn" title="Capture table as image" tabindex="0" style="margin-left: 0;">📸 Capture</button>
+        <button class="capture-btn" id="capture-hourly-btn" title="Copy table as image to clipboard" tabindex="0" style="margin-left: 0;">📸 Copy Image</button>
       </div>
     </div>
     <div class="dashboard-table-wrapper" id="dashboard-table-container"></div>
@@ -482,10 +482,28 @@
         scale: 2,
         useCORS: true
       }).then(canvas => {
-        let link = document.createElement('a');
-        link.download = `${name}_${(new Date().toISOString().replace(/[:.]/g,'-'))}.png`;
-        link.href = canvas.toDataURL();
-        link.click();
+        // Check if the Clipboard API is available
+        if (navigator.clipboard && navigator.clipboard.write) {
+          canvas.toBlob(function(blob) {
+            const item = new ClipboardItem({ "image/png": blob });
+            navigator.clipboard.write([item]).then(function() {
+              alert('Table image copied to clipboard!');
+            }).catch(function(error) {
+              console.error('Failed to copy image to clipboard:', error);
+              alert('Failed to copy image to clipboard. Please ensure your browser supports this feature and you have granted permission.');
+            });
+          }, 'image/png');
+        } else {
+          // Fallback for browsers that do not support ClipboardItem (e.g., Firefox)
+          // You might consider a different fallback, like offering a download or
+          // instructing the user to right-click and copy.
+          alert('Your browser does not support copying images directly to the clipboard. Please right-click on the table and select "Copy Image" or use the download option if available.');
+          // Original download functionality as a fallback (optional)
+          // let link = document.createElement('a');
+          // link.download = `${name}_${(new Date().toISOString().replace(/[:.]/g,'-'))}.png`;
+          // link.href = canvas.toDataURL();
+          // link.click();
+        }
       });
     }
 
