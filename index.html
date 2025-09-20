@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Agent Productivity Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Clean, readable font (Nunito Sans) -->
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@700;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <style>
+    :root {
+      --bg: #f8fbfd;
+      --bubble-bg: #fff;
+      --bubble-shadow: 0 6px 40px 0 rgba(114, 193, 255, 0.10), 0 2px 4px #aaa2;
+      --bubble-radius: 32px;
+      --tab-bg: #f2f3fd;
+      --tab-active: #7ed7c1;
+      --tab-inactive: #ffb8b2;
+      --tab-font: #5b6b7a;
+      --tab-font-active: #255f5d;
+      --header-main: #7ed7c1;
+      --header-shadow: #aff8db;
+      --accent: #ffb8b2;
+      --accent2: #ffe066;
+      --accent3: #a7acf7;
+      --accent4: #ffb8b2;
+      --table-header: #aff8db;
+      --table-header2: #a7acf7;
+      --table-row: #ffffff;
+      --table-row-alt: #f5fafd;
+      --table-font: #27536b;
+      --table-highlight: #ffe066;
+      --input-bg: #f7faff;
+      --input-border: #a7acf7;
+      --input-focus: #7ed7c1;
+      --input-shadow: 0 1px 6px #0001;
+      --fun: #ffd6e3;
+    }
+    html, body {
+      background: var(--bg);
+      margin: 0;
+      padding: 0;
+      font-family: 'Nunito Sans', Arial, sans-serif;
+      color: var(--table-font);
+    }
+    .fun-bg-bubble {
+      position: fixed;
+      z-index: 0;
+      border-radius: 50%;
+      filter: blur(20px);
+      opacity: 0.35;
+      pointer-events: none;
+      animation: floatBubble 25s infinite alternate;
+    }
+    .bubble1 { width: 350px; height: 350px; background: #ffe066; left: -120px; top: -60px; }
+    .bubble2 { width: 180px; height: 180px; background: #7ed7c1; right: 10vw; top: 40px; animation-delay: 12s;}
+    .bubble3 { width: 190px; height: 190px; background: #ffb8b2; left: 30vw; bottom: -70px; animation-delay: 7s;}
+    .bubble4 { width: 180px; height: 180px; background: #a7acf7; right: -60px; bottom: 40px; animation-delay: 17s;}
+    @keyframes floatBubble {
+      0% { transform: scale(1) translateY(0);}
+      100% { transform: scale(1.15) translateY(18px);}
+    }
+    /* Main container */
+    .dashboard-container {
+      background: var(--bubble-bg);
+      border-radius: var(--bubble-radius);
+      box-shadow: var(--bubble-shadow);
+      max-width: 900px;
+      margin: 52px auto 32px;
+      padding: 32px 12px 24px 12px;
+      position: relative;
+      z-index: 2;
+      min-height: 330px;
+      border: 3.5px solid #e0f6ff;
+      transition: all 0.2s cubic-bezier(.44,1.34,.32,1);
+      overflow: visible;
+    }
+    /* Full width for hourly table */
+    .fullscreen-hourly {
+      position: fixed !important;
+      left: 0;
+      top: 0;
+      width: 100vw !important;
+      height: 100vh !important;
+      margin: 0 !important;
+      max-width: 100vw !important;
+      min-width: 0 !important;
+      z-index: 1000 !important;
+      border-radius: 0 !important;
+      padding: 22px 14px 18px 14px !important;
+      box-shadow: none !important;
+      background: var(--bg) !important;
+      overflow: auto !important;
+      transition: all 0.22s cubic-bezier(.44,1.34,.32,1);
+      border: none !important;
+    }
+    .fullscreen-hourly .dashboard-table-wrapper {
+      border-radius: 18px;
+      padding: 8px 2vw;
+      background: var(--bubble-bg);
+      min-height: 60vh;
+    }
+    .fullscreen-hourly .dashboard-header {
+      position: sticky;
+      top: 0;
+      z-index: 2000;
+      background: var(--bg);
+      border-radius: 0;
+      padding-top: 7px;
+      margin-bottom: 14px;
+    }
+    .fullscreen-btn {
+      font-family: 'Nunito Sans', Arial, sans-serif;
+      background: linear-gradient(90deg, #7ed7c1 40%, #a7acf7 100%);
+      color: #27536b;
+      font-weight: 900;
+      font-size: 1.05rem;
+      border: none;
+      border-radius: 14px;
+      padding: 8px 22px;
+      margin-left: 18px;
+      cursor: pointer;
+      outline: none;
+      box-shadow: 0 2px 12px #7ed7c155;
+      letter-spacing: 0.5px;
+      transition: background 0.16s, transform 0.14s;
+    }
+    .fullscreen-btn:hover, .fullscreen-btn:focus {
+      background: linear-gradient(90deg, #a7acf7 0%, #7ed7c1 100%);
+      transform: scale(1.04);
+    }
+    /* Header */
+    .dashboard-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 28px;
+      border-bottom: 2px dashed var(--header-main);
+      padding-bottom: 10px;
+      background: transparent;
+    }
+    .dashboard-header h1 {
+      font-family: 'Nunito Sans', Arial, sans-serif;
+      font-size: 2.2rem;
+      font-weight: 900;
+      margin: 0;
+      line-height: 1.08;
+      background: linear-gradient(90deg, var(--header-main) 17%, var(--header-shadow) 80%, var(--accent2) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-fill-color: transparent;
+      text-shadow: 0 8px 30px #aff8db55, 0 2px 7px #ffb8b233;
+      letter-spacing: 1px;
+      user-select: none;
+      display: flex;
+      align-items: flex-end;
+    }
+    .premium-badge {
+      margin-left: 10px;
+      padding: 6px 16px;
+      font-size: 1.01rem;
+      border-radius: 16px;
+      background: linear-gradient(90deg, #ffe066 30%, #ffb8b2 100%);
+      color: #a65d03;
+      font-family: 'Nunito Sans', Arial, sans-serif;
+      font-weight: 900;
+      letter-spacing: 0.8px;
+      border: 2px solid #ffe066bb;
+      box-shadow: 0 2.5px 12px #ffe06633, 0 1px 3px #fff;
+      display: inline-block;
+      vertical-align: middle;
+      animation: badgeGlow 2.2s infinite alternate;
+      transition: all 0.18s;
+      user-select: none;
+    }
+    @keyframes badgeGlow {
+      0% { box-shadow: 0 2.5px 7px #ffe06622, 0 1px 3px #fff;}
+      100% { box-shadow: 0 5px 24px #ffe06666, 0 1px 3px #fff;}
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      background: var(--tab-bg);
+      border-radius: 20px;
+      box-shadow: 0 2px 7px #7ed7c122;
+      padding: 7px 7px;
+    }
+    input[type="file"] { display: none; }
+    .file-label {
+      background: linear-gradient(92deg, var(--accent) 20%, var(--tab-active) 80%);
+      color: #fff;
+      font-family: 'Nunito Sans', Arial, sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.7px;
+      padding: 10px 22px;
+      border-radius: 16px;
+      cursor: pointer;
+      border: none;
+      font-size: 1rem;
+      box-shadow: 0 2px 10px #7ed7c144;
+      transition: background 0.16s;
+      text-transform: uppercase;
+      outline: none;
+    }
+    .file-label:hover, .file-label:focus {
+      background: linear-gradient(90deg, var(--tab-active) 0%, var(--accent) 100%);
+      transform: scale(1.04);
+      outline: 2px solid #ffe06677;
+    }
+    .datepicker, .search-input {
+      font-family: 'Nunito Sans', Arial, sans-serif;
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: var(--input-bg);
+      color: var(--table-font);
+      border: 2px solid var(--input-border);
+      font-size: 1rem;
+      outline: none;
+      box-shadow: var(--input-shadow);
+      transition: border 0.14s;
+      min-width: 120px;
+      font-weight: 700;
+    }
+    .datepicker::placeholder, .search-input::placeholder {
+      color: var(--tab-inactive);
+      opacity: 1;
+      font-weight: 500;
+    }
+    .datepicker:focus, .search-input:focus {
+      border-color: var(--input-focus);
+      background: #eafffc;
+      box-shadow: 0 1px 12px #7ed7c144;
+    }
+    /* Tab bar */
+    .tab-bar {
+      margin: 18px 0 12px 0;
+      display: flex;
+      background: var(--tab-bg);
+      border-radius: 18px;
+      overflow: hidden;
+      min-width: 180px;
+      box-shadow: 0 2.5px 11px #a7acf720;
+      border: 2px solid #a7acf777;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 9px 6px;
+      font-size: 1rem;
+      font-family: 'Nunito Sans', Arial, sans-serif;
+      font-weight: 900;
+      border: none;
+      background: none;
+      color: var(--tab-font);
+      letter-spacing: 0.6px;
+      cursor: pointer;
+      outline: none;
+      border-right: 2px solid #a7acf777;
+      transition: background 0.15s, color 0.12s;
+      text-transform: uppercase;
+      border-radius: 0;
+    }
+    .tab-btn:last-child { border-right: none; }
+    .tab-btn:hover:not(.active) {
+      background: var(--fun);
+      color: var(--accent);
+      transform: scale(1.05);
+    }
+    .tab-btn.active {
+      background: linear-gradient(90deg, var(--tab-active) 0%, var(--accent2) 100%);
+      color: var(--tab-font-active);
+      font-weight: 900;
+      border-radius: 14px;
+      box-shadow: 0 2px 10px #7ed7c133;
+      z-index: 1;
+      position: relative;
+      text-shadow: 0 1px 4px #fff4;
+    }
+    /* Table styles */
+    .dashboard-table-wrapper {
+      background: var(--bubble-bg);
+      border-radius: 18px;
+      box-shadow: 0 2.5px 16px #a7acf720, 0 1.5px 0 #fff3;
+      padding: 7px 2px;
+      overflow-x: auto;
+      border: 2px solid #7ed7c133;
+      min-height: 120px;
+    }
+    .dashboard-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: transparent;
+      border-radius: 16px;
+      min-width: 500px;
+      overflow: hidden;
+      font-family: 'Nunito Sans', Arial, sans-serif;
+      font-size: 1rem;
+      box-shadow: 0 1.5px 0 #fff2;
+    }
+    .dashboard-table th, .dashboard-table td {
+      text-align: left;
+      padding: 11px 14px;
+      border-bottom: 2px solid #f3f3fa;
+      transition: background 0.2s;
+    }
+    .dashboard-table th {
+      background: linear-gradient(90deg, var(--table-header) 0%, var(--table-header2) 100%);
+      color: #255f5d;
+      font-weight: 900;
+      font-size: 1.01rem;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      text-shadow: 0 1.5px 4px #fff7;
+      border-bottom: 2.5px solid #ffe066;
+      letter-spacing: 0.2px;
+      font-family: 'Nunito Sans', Arial, sans-serif;
+      user-select: none;
+    }
+    .dashboard-table tr {
+      transition: background 0.15s;
+    }
+    .dashboard-table tr:nth-child(even) td {
+      background: var(--table-row-alt);
+    }
+    .dashboard-table tr:hover {
+      background: var(--fun);
+      transform: scale(1.01);
+    }
+    .dashboard-table tr:last-child td {
+      border-bottom: none;
+    }
+    .dashboard-table td {
+      color: var(--table-font);
+      font-size: 1rem;
+      font-weight: 700;
+      background: var(--table-row);
+      font-family: 'Nunito Sans', Arial, sans-serif;
+      border-radius: 7px;
+    }
+    .grand-total {
+      font-weight: 900;
+      color: #fff;
+      background: linear-gradient(90deg, var(--header-main) 0%, var(--tab-active) 100%);
+      border-radius: 12px;
+      padding: 7px 13px;
+      display: inline-block;
+      min-width: 55px;
+      text-align: center;
+      font-size: 1.08rem;
+      border: 2px solid #7ed7c1bb;
+      text-shadow: 0 1.5px 4px #7ed7c166;
+    }
+    .no-data {
+      text-align: center;
+      padding: 24px 0;
+      color: var(--accent);
+      font-size: 1.04rem;
+      font-family: 'Nunito Sans', Arial, sans-serif;
+      font-weight: 700;
+      border-radius: 18px;
+      margin: 8px 2vw;
+      background: var(--fun);
+      box-shadow: 0 2.5px 10px #ffd6e322;
+      border: 2px solid #ffd6e3;
+      letter-spacing: 0.2px;
+    }
+    /* Hourly Table playful */
+    .hourly-main-header {
+      background: linear-gradient(90deg, var(--header-shadow) 0%, var(--accent2) 100%) !important;
+      color: #255f5d !important;
+      font-weight: 900 !important;
+      text-align: center;
+      font-size: 1.01rem;
+      border-bottom: 2.5px solid #ffe066 !important;
+      font-family: 'Nunito Sans', Arial, sans-serif;
+    }
+    .hourly-hourgroup, .hourly-hourgroup2 {
+      background: linear-gradient(90deg, #fffbe9 0%, #ffe06688 100%) !important;
+      color: #5b6b7a !important;
+      text-align: center;
+      font-family: 'Nunito Sans', Arial, sans-serif;
+      font-weight: 900;
+      border-bottom: 2px solid #ffe06666 !important;
+    }
+    .hourly-hourgroup2 {
+      background: linear-gradient(90deg, #ffe5ec 0%, #ffb8b2 100%) !important;
+      color: #ff7eb9 !important;
+      border-bottom: 2px solid #ff7eb9bb !important;
+    }
+    .hourly-subheader {
+      background: #fffbe9 !important;
+      color: #255f5d !important;
+      font-weight: 900;
+      text-align: center;
+      border-bottom: 1.5px solid #ffe06666 !important;
+      font-family: 'Nunito Sans', Arial, sans-serif;
+    }
+    .hourly-hourgroup .hourly-subheader, .hourly-hourgroup2 .hourly-subheader {
+      background: inherit !important;
+      color: inherit !important;
+    }
+    .hourly-metric {
+      color: #27536b !important;
+      font-weight: 700;
+      text-align: center;
+      font-size: 1rem;
+      background: #fffbe999;
+      border-radius: 7px;
+    }
+    .hourly-metric0 { background: #aff8db33; }
+    .hourly-metric1 { background: #ffd6e333; }
+    .grand-total-hour {
+      background: linear-gradient(90deg, var(--header-main) 0%, var(--tab-active) 100%) !important;
+      color: #fff !important;
+      font-weight: 900;
+      text-align: center;
+      font-size: 1.08rem;
+      border-radius: 10px;
+      border: 2px solid #7ed7c1bb;
+      text-shadow: 0 1.5px 5px #7ed7c166;
+    }
+    /* Responsive */
+    @media (max-width: 650px) {
+      .dashboard-header { flex-direction: column; align-items: flex-start; gap: 7px; }
+      .dashboard-header h1 { font-size: 1.1rem;}
+      .premium-badge { font-size: 0.77rem; padding: 3px 9px;}
+      .controls { flex-direction: column; align-items: stretch; padding: 6px 2vw;}
+      .file-label, .datepicker, .search-input { width: 100%; min-width: unset; }
+      .tab-bar { flex-direction: column; border-radius: 13px;}
+      .tab-btn { border-right: none; border-bottom: 2px solid #a7acf777; border-radius: 0;}
+      .tab-btn:last-child { border-bottom: none;}
+      .tab-btn.active { border-radius: 11px;}
+      .dashboard-table th,.dashboard-table td { font-size: 0.89rem;}
+      .grand-total, .grand-total-hour { font-size: 0.88rem; padding: 4px 7px;}
+      .no-data { padding: 13px 0; font-size: 0.89rem;}
+      .dashboard-container { padding: 9px 1vw;}
+    }
+    /* Hide horizontal scroll for full-screen table */
+    .fullscreen-hourly .dashboard-table-wrapper {
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="fun-bg-bubble bubble1"></div>
+  <div class="fun-bg-bubble bubble2"></div>
+  <div class="fun-bg-bubble bubble3"></div>
+  <div class="fun-bg-bubble bubble4"></div>
+  <div class="dashboard-container" id="dashboard-container">
+    <div class="dashboard-header" id="dashboard-header">
+      <div>
+        <h1>
+          Agent Productivity
+          <span class="premium-badge">PREMIUM</span>
+        </h1>
+      </div>
+      <div class="controls">
+        <label for="file-upload" class="file-label">Upload Excel</label>
+        <input type="file" id="file-upload" accept=".xlsx,.xls,.csv" />
+        <input type="text" class="search-input" id="email-search" placeholder="Search agent emails (comma/space separated)" />
+        <input type="text" class="datepicker" id="date-filter" placeholder="Filter by date" />
+      </div>
+    </div>
+    <div class="tab-bar" id="tab-bar">
+      <button class="tab-btn active" data-tab="summary">Agent Summary</button>
+      <button class="tab-btn" data-tab="hourly">Hourly Interval</button>
+    </div>
+    <div id="fullscreen-button-area"></div>
+    <div class="dashboard-table-wrapper" id="dashboard-table-container"></div>
+  </div>
+  <script>
+    flatpickr("#date-filter", {
+      dateFormat: "Y-m-d",
+      allowInput: true,
+      onChange: function() { renderTable(); }
+    });
+
+    let originalData = [];
+    let filteredData = [];
+    let currentTab = "summary";
+    let intervalColumnKey = null;
+    let isHourlyFullscreen = false;
+
+    document.querySelectorAll('.tab-btn').forEach(tab => {
+      tab.addEventListener('click', function() {
+        document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+        currentTab = this.getAttribute('data-tab');
+        toggleFullscreenButton();
+        renderTable();
+      });
+    });
+
+    document.querySelector('#file-upload').addEventListener('change', handleFile, false);
+    document.querySelector('.file-label').addEventListener('click', () => {
+      document.querySelector('#file-upload').click();
+    });
+    document.getElementById('email-search').addEventListener('input', renderTable);
+    document.getElementById('date-filter').addEventListener('input', renderTable);
+
+    // Fullscreen controls
+    function toggleFullscreenButton() {
+      const btnArea = document.getElementById('fullscreen-button-area');
+      btnArea.innerHTML = '';
+      if (currentTab === 'hourly') {
+        const btn = document.createElement('button');
+        btn.className = 'fullscreen-btn';
+        btn.innerText = isHourlyFullscreen ? 'Exit Fullscreen' : 'Full Screen View';
+        btn.onclick = function() {
+          isHourlyFullscreen = !isHourlyFullscreen;
+          updateFullscreen();
+        };
+        btnArea.appendChild(btn);
+      }
+    }
+    function updateFullscreen() {
+      const container = document.getElementById('dashboard-container');
+      if (currentTab === 'hourly' && isHourlyFullscreen) {
+        container.classList.add('fullscreen-hourly');
+        document.body.style.overflow = 'hidden';
+      } else {
+        container.classList.remove('fullscreen-hourly');
+        document.body.style.overflow = '';
+      }
+      toggleFullscreenButton();
+      renderTable();
+    }
+
+    // Data extraction
+    function detectIntervalCol(row) {
+      let keys = Object.keys(row || {});
+      for (let k of keys) {
+        let norm = k.replace(/\s+/g, '').toLowerCase();
+        if (norm.includes("interval") && norm.match(/60|min/)) return k;
+      }
+      return null;
+    }
+    function isRowEmpty(row) {
+      return Object.values(row).every(val => !val || String(val).trim() === '');
+    }
+    function handleFile(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const data = evt.target.result;
+        let workbook;
+        if (file.name.endsWith('.csv')) {
+          workbook = XLSX.read(data, {type: 'binary'});
+        } else {
+          workbook = XLSX.read(data, {type: 'array'});
+        }
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const json = XLSX.utils.sheet_to_json(worksheet, {defval: ""});
+        intervalColumnKey = detectIntervalCol(json[0]);
+        originalData = json
+          .filter(row => !isRowEmpty(row) && row['Customer service name'] && row['Customer Service Email'])
+          .map(row => ({
+            date: row['Date'] || row['date'] || '',
+            name: row['Customer service name'] || row['Customer Service Name'] || row['Customer'] || row['Name'] || '',
+            email: row['Customer Service Email'] || row['Email'] || row['Customer Service Email'] || '',
+            status: (row['Current Status'] || row['Status'] || row['Current St.'] || '').toLowerCase(),
+            notes: row['Notes'] || '',
+            duration: row['Duration'] || 0,
+            start: row['Start time'] || row['Start Time'] || '',
+            end: row['End time'] || row['End Time'] || '',
+            im_volume: parseFloat(row['IM Conversation Pick-up Volume'] || row['IM Conver'] || 0) || 0,
+            ticket_handle: parseFloat(row['Ticket Handle Times'] || row['Ticket Han'] || 0) || 0,
+            ticket_resolve: parseFloat(row['Ticket Resolve Times'] || row['Ticket Res'] || 0) || 0,
+            interval: intervalColumnKey ? (row[intervalColumnKey] || '') : ''
+          }));
+        renderTable();
+      };
+      if (file.name.endsWith('.csv')) {
+        reader.readAsBinaryString(file);
+      } else {
+        reader.readAsArrayBuffer(file);
+      }
+    }
+    function getEmailFilters() {
+      const val = document.getElementById('email-search').value.trim().toLowerCase();
+      if (!val) return [];
+      return val.split(/[\s,]+/).map(e => e.trim()).filter(e => e);
+    }
+    function applyFilters() {
+      let data = originalData
+        .filter(row => row.status !== "offline")
+        .filter(row => {
+          const dateFilter = document.getElementById('date-filter').value.trim();
+          if (!dateFilter) return true;
+          return (row.date || "").toLowerCase().includes(dateFilter.toLowerCase());
+        })
+        .filter(row => {
+          const emails = getEmailFilters();
+          if (!emails.length) return true;
+          return emails.includes((row.email || '').toLowerCase());
+        });
+      return data;
+    }
+
+    // Rendering
+    function renderTable() {
+      filteredData = applyFilters();
+      if (currentTab === "summary") renderSummaryTable();
+      else if (currentTab === "hourly") renderHourlyAgentMirrorTable();
+    }
+    function renderSummaryTable() {
+      const agentMap = {};
+      filteredData.forEach(row => {
+        const key = (row.name || '').trim() + '|' + (row.email || '').trim();
+        if (!agentMap[key]) {
+          agentMap[key] = {
+            name: row.name,
+            email: row.email,
+            im_volume: 0,
+            ticket_handle: 0
+          };
+        }
+        agentMap[key].im_volume += row.im_volume;
+        agentMap[key].ticket_handle += row.ticket_handle;
+      });
+      const agents = Object.values(agentMap);
+      let html = '';
+      if (agents.length === 0) {
+        html = `<div class="no-data">No agent data to display.<br>Upload a file or adjust your filters.</div>`;
+      } else {
+        html = `
+          <table class="dashboard-table">
+            <thead>
+              <tr>
+                <th>Customer Service Name</th>
+                <th>Customer Service Email</th>
+                <th>IM</th>
+                <th>Ticket</th>
+                <th>Grand Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${agents.map(agent => `
+                <tr>
+                  <td>${agent.name}</td>
+                  <td>${agent.email}</td>
+                  <td>${agent.im_volume}</td>
+                  <td>${agent.ticket_handle}</td>
+                  <td class="grand-total">${agent.im_volume + agent.ticket_handle}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+      }
+      document.getElementById('dashboard-table-container').innerHTML = html;
+    }
+    function renderHourlyAgentMirrorTable() {
+      // Full view: table needs to fit to screen
+      const wrapper = document.getElementById('dashboard-table-container');
+      if (!intervalColumnKey) {
+        wrapper.innerHTML = `<div class="no-data">No hourly interval data to display.<br>Upload a file or adjust your filters.</div>`;
+        return;
+      }
+      const allIntervalsSet = new Set();
+      filteredData.forEach(row => {
+        const interval = (row.interval || '').toString().trim();
+        if (interval) allIntervalsSet.add(interval);
+      });
+      const allIntervals = Array.from(allIntervalsSet).filter(x=>x).sort((a, b) => {
+        const [ah, am] = a.split(":").map(Number);
+        const [bh, bm] = b.split(":").map(Number);
+        return ah - bh || am - bm;
+      });
+      const agentMap = {};
+      filteredData.forEach(row => {
+        const agentKey = (row.name || '').trim() + '|' + (row.email || '').trim();
+        if (!agentMap[agentKey]) {
+          agentMap[agentKey] = {
+            name: row.name,
+            intervals: {}
+          };
+        }
+        const interval = (row.interval || '').toString().trim();
+        if (!interval) return;
+        if (!agentMap[agentKey].intervals[interval]) {
+          agentMap[agentKey].intervals[interval] = {im_volume: 0, ticket_handle: 0};
+        }
+        agentMap[agentKey].intervals[interval].im_volume += row.im_volume;
+        agentMap[agentKey].intervals[interval].ticket_handle += row.ticket_handle;
+      });
+      const agentKeysSorted = Object.keys(agentMap).sort((a, b) => {
+        if (agentMap[a].name < agentMap[b].name) return -1;
+        if (agentMap[a].name > agentMap[b].name) return 1;
+        return 0;
+      });
+      let html = '';
+      if (agentKeysSorted.length === 0 || allIntervals.length === 0) {
+        html = `<div class="no-data">No hourly interval data to display.<br>Upload a file or adjust your filters.</div>`;
+      } else {
+        // Fullscreen: min-width so all columns fit, use overflow-x auto
+        html = `<div style="width:100%;overflow-x:auto;">
+          <table class="dashboard-table" style="min-width:${Math.max(700, 220+allIntervals.length*90)}px">
+            <thead>
+              <tr>
+                <th class="hourly-main-header">Customer Service Name</th>`;
+        allIntervals.forEach((interval, i) => {
+          html += `<th class="${i%2===0?'hourly-hourgroup':'hourly-hourgroup2'}" colspan="2">${interval}</th>`;
+        });
+        html += `<th class="grand-total-hour" rowspan="2">Grand Total</th></tr>
+            <tr>
+              <th class="hourly-main-header"></th>`;
+        allIntervals.forEach((interval, i) => {
+          html += `<th class="${i%2===0?'hourly-hourgroup':'hourly-hourgroup2'} hourly-subheader">IM</th>
+                   <th class="${i%2===0?'hourly-hourgroup':'hourly-hourgroup2'} hourly-subheader">Ticket</th>`;
+        });
+        html += `</tr>
+            </thead>
+            <tbody>`;
+        agentKeysSorted.forEach(agentKey => {
+          const agent = agentMap[agentKey];
+          let grandTotal = 0;
+          html += `<tr>
+            <td class="hourly-header">${agent.name}</td>`;
+          allIntervals.forEach((interval, i) => {
+            const metrics = agent.intervals[interval] || {im_volume: 0, ticket_handle: 0};
+            grandTotal += metrics.im_volume + metrics.ticket_handle;
+            html += `<td class="hourly-metric${i%2===0?'0':'1'}">${metrics.im_volume ? metrics.im_volume : ''}</td>`;
+            html += `<td class="hourly-metric${i%2===0?'0':'1'}">${metrics.ticket_handle ? metrics.ticket_handle : ''}</td>`;
+          });
+          html += `<td class="grand-total-hour">${grandTotal}</td></tr>`;
+        });
+        html += `</tbody></table></div>`;
+      }
+      wrapper.innerHTML = html;
+    }
+
+    // On load, set up fullscreen button if on hourly tab
+    toggleFullscreenButton();
+  </script>
+</body>
+</html>
