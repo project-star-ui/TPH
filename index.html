@@ -424,7 +424,7 @@
       </div>
       <div class="controls">
         <label for="file-upload" class="file-label">Upload Excel</label>
-        <input type="file" id="file-upload" accept=".xlsx,.xls,.csv" />
+        <input type="file" id="file-upload" accept=".xlsx,.xls,.xlsm,.xlsb,.xltx,.xltm,.csv" />
         <input type="text" class="search-input" id="email-search" placeholder="Search agent emails (comma/space separated)" />
         <input type="text" class="datepicker" id="date-filter" placeholder="Filter by date" />
       </div>
@@ -473,9 +473,7 @@
     }
 
     document.querySelector('#file-upload').addEventListener('change', handleFile, false);
-    document.querySelector('.file-label').addEventListener('click', () => {
-      document.querySelector('#file-upload').click();
-    });
+    // REMOVED: document.querySelector('.file-label').addEventListener('click', () => { document.querySelector('#file-upload').click(); });
     document.getElementById('email-search').addEventListener('input', renderTable);
     document.getElementById('date-filter').addEventListener('input', renderTable);
 
@@ -555,6 +553,9 @@
       reader.onload = function(evt) {
         const data = evt.target.result;
         let workbook;
+        // The XLSX library handles various Excel formats automatically based on file content,
+        // so explicit type handling for each extension is not strictly necessary here,
+        // but checking for CSV is still good practice.
         if (file.name.endsWith('.csv')) {
           workbook = XLSX.read(data, {type: 'binary'});
         } else {
