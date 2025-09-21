@@ -5,411 +5,573 @@
   <title>Agent Productivity Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <style>
+    /* --- Global Variables & Base Styles --- */
     :root {
-      --bg: linear-gradient(120deg, #dadbdd 0%, #f3f6fa 100%);
-      --card: #fff;
-      --card-glass: rgba(255,255,255,0.85);
-      --accent: #f8d57c;
-      --accent-dark: #d9b53a;
-      --border: #e1e3e8;
-      --shadow: 0 4px 32px 0 rgba(33,39,67,.08), 0 2px 8px #0001;
-      --shadow-light: 0 1.5px 6px #cacadb44;
-      --tab-bg: #f4f6fa;
-      --tab-active: #fff;
-      --tab-inactive: #eee;
-      --tab-font: #1d222c;
-      --tab-font-active: #222;
-      --gold: #e7c873;
-      --gold-soft: #fdf6e4;
-      --teal: #5eead4;
-      --table-header1: #fdf6e4;
-      --table-header2: #e7c87333;
-      --table-row: #fff;
-      --table-row-alt: #f8fafb;
-      --table-font: #1d222c;
-      --table-highlight: #ffe066;
-      --input-bg: #f8fafb;
-      --input-border: #e7c873;
-      --input-focus: #5eead4;
-      --input-shadow: 0 1px 12px #e7c87322;
-      --fun: #ffe6e0;
+      --color-primary: #4A90E2; /* A vibrant blue */
+      --color-secondary: #50E3C2; /* A fresh teal */
+      --color-accent: #F5A623; /* A warm orange for highlights */
+      --color-text-dark: #2C3E50; /* Dark charcoal for main text */
+      --color-text-light: #ECF0F1; /* Light gray for contrast */
+      --color-background-light: #F8F9FA; /* Very light gray */
+      --color-background-dark: #34495E; /* Dark blue-gray */
+      --color-card-bg: #FFFFFF;
+      --color-border: #E0E6ED;
+      --color-shadow-light: rgba(0, 0, 0, 0.08);
+      --color-shadow-medium: rgba(0, 0, 0, 0.15);
+      --color-shadow-deep: rgba(0, 0, 0, 0.25);
+
+      --font-heading: 'Montserrat', sans-serif;
+      --font-body: 'Inter', sans-serif;
+
+      --border-radius-sm: 8px;
+      --border-radius-md: 16px;
+      --border-radius-lg: 24px;
+      --border-radius-xl: 32px;
+
+      --gradient-header: linear-gradient(90deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+      --gradient-button: linear-gradient(90deg, var(--color-secondary) 0%, var(--color-primary) 100%);
+      --gradient-button-hover: linear-gradient(90deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+      --gradient-premium: linear-gradient(90deg, #FFD700 0%, #FFA500 100%); /* Gold to Orange */
+      --gradient-tab-active: linear-gradient(90deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+      --gradient-table-header: linear-gradient(90deg, var(--color-background-light) 0%, rgba(var(--color-primary), 0.1) 100%);
+      --gradient-hourly-group1: linear-gradient(90deg, rgba(var(--color-primary), 0.05) 0%, rgba(var(--color-secondary), 0.05) 100%);
+      --gradient-hourly-group2: linear-gradient(90deg, rgba(var(--color-accent), 0.05) 0%, rgba(var(--color-primary), 0.05) 100%);
     }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
     html, body {
-      background: var(--bg);
+      background: linear-gradient(135deg, #F0F2F5 0%, #E0E6ED 100%);
       margin: 0;
       padding: 0;
-      font-family: 'Inter', Arial, sans-serif;
-      color: var(--table-font);
+      font-family: var(--font-body);
+      color: var(--color-text-dark);
       min-height: 100vh;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
+
+    /* --- Dashboard Container --- */
     .dashboard-container {
-      background: var(--card-glass);
-      border-radius: 32px;
-      box-shadow: var(--shadow);
-      max-width: 970px;
-      margin: 54px auto 32px;
-      padding: 34px 18px 24px 18px;
-      border: 1.5px solid var(--border);
-      min-height: 350px;
+      background: var(--color-card-bg);
+      border-radius: var(--border-radius-xl);
+      box-shadow: 0 15px 45px var(--color-shadow-medium);
+      max-width: 1200px; /* Increased max-width for more space */
+      margin: 60px auto 40px;
+      padding: 40px;
+      border: 1px solid var(--color-border);
+      min-height: 400px;
       position: relative;
       z-index: 2;
-      transition: box-shadow .15s;
+      transition: all 0.3s ease-in-out;
     }
+    .dashboard-container:hover {
+      box-shadow: 0 20px 60px var(--color-shadow-deep);
+    }
+
+    /* --- Header --- */
     .dashboard-header {
       display: flex;
-      align-items: flex-end;
+      flex-wrap: wrap; /* Allow wrapping on smaller screens */
+      align-items: center;
       justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 30px;
-      border-bottom: 2.5px solid #ebebee;
-      padding-bottom: 12px;
-      background: transparent;
+      gap: 25px;
+      margin-bottom: 40px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid var(--color-border);
     }
+
     .dashboard-header h1 {
-      font-size: 2.1rem;
+      font-family: var(--font-heading);
+      font-size: 2.8rem; /* Larger heading */
       font-weight: 900;
       margin: 0;
-      letter-spacing: 1.2px;
-      background: linear-gradient(90deg, #e7c873 10%, #fffbe9 90%);
+      letter-spacing: 1.5px;
+      background: var(--gradient-header);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
       text-fill-color: transparent;
-      text-shadow: 0 6px 24px #e7c87322;
+      text-shadow: 0 4px 15px rgba(var(--color-primary), 0.3);
       user-select: none;
       display: flex;
-      align-items: flex-end;
+      align-items: center;
+      flex-shrink: 0; /* Prevent shrinking */
     }
+
     .premium-badge {
-      margin-left: 12px;
-      padding: 7px 18px;
-      font-size: 1rem;
-      border-radius: 13px;
-      background: linear-gradient(92deg, #ffe066 30%, #e7c873 100%);
-      color: #7e6511;
-      font-weight: 900;
-      letter-spacing: .7px;
-      border: 2.5px solid #ffe066bb;
-      box-shadow: 0 2.5px 12px #ffe06633, 0 1px 3px #fff;
+      margin-left: 18px;
+      padding: 8px 20px;
+      font-size: 1.1rem;
+      border-radius: var(--border-radius-md);
+      background: var(--gradient-premium);
+      color: #8B4513; /* Darker brown for contrast on gold */
+      font-weight: 800;
+      letter-spacing: .8px;
+      border: 2px solid rgba(255, 215, 0, 0.6);
+      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4), 0 1px 3px rgba(255, 255, 255, 0.5);
       display: inline-block;
       vertical-align: middle;
       user-select: none;
-      transition: box-shadow 0.18s;
+      transition: all 0.2s ease-in-out;
+      text-transform: uppercase;
     }
+    .premium-badge:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6), 0 2px 5px rgba(255, 255, 255, 0.7);
+    }
+
+    /* --- Controls --- */
     .controls {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 12px;
       align-items: center;
-      background: var(--tab-bg);
-      border-radius: 18px;
-      box-shadow: 0 2px 8px #e7c87314;
-      padding: 7px 12px 7px 10px;
-      border: 1.5px solid #f3e8c0;
+      background: var(--color-background-light);
+      border-radius: var(--border-radius-md);
+      box-shadow: 0 5px 15px var(--color-shadow-light);
+      padding: 10px 15px;
+      border: 1px solid var(--color-border);
+      flex-grow: 1; /* Allow controls to take available space */
+      justify-content: flex-end; /* Align items to the right */
     }
+
     input[type="file"] { display: none; }
+
     .file-label {
-      background: linear-gradient(92deg, var(--gold) 20%, var(--teal) 80%);
-      color: #23243e;
-      font-weight: 800;
-      letter-spacing: .8px;
-      padding: 10px 22px;
-      border-radius: 15px;
+      background: var(--gradient-button);
+      color: var(--color-text-light);
+      font-weight: 700;
+      letter-spacing: .5px;
+      padding: 12px 25px;
+      border-radius: var(--border-radius-md);
       cursor: pointer;
       font-size: 1rem;
-      box-shadow: 0 2px 10px #e7c87333, 0 0 0 2px #fff2;
+      box-shadow: 0 4px 15px rgba(var(--color-primary), 0.3);
       border: none;
-      transition: background 0.16s, box-shadow 0.12s;
+      transition: all 0.2s ease-in-out;
       text-transform: uppercase;
       outline: none;
+      white-space: nowrap; /* Prevent text wrapping */
     }
     .file-label:hover, .file-label:focus {
-      background: linear-gradient(90deg, #5eead4 0%, var(--gold) 100%);
-      outline: 2px solid #ffe06677;
-      box-shadow: 0 6px 20px #5eead433;
+      background: var(--gradient-button-hover);
+      box-shadow: 0 6px 20px rgba(var(--color-secondary), 0.4);
+      transform: translateY(-2px);
     }
+
     .datepicker, .search-input {
-      font-family: inherit;
-      padding: 10px 12px;
-      border-radius: 13px;
-      background: var(--input-bg);
-      color: var(--table-font);
-      border: 2px solid var(--input-border);
+      font-family: var(--font-body);
+      padding: 12px 15px;
+      border-radius: var(--border-radius-md);
+      background: var(--color-background-light);
+      color: var(--color-text-dark);
+      border: 1px solid var(--color-border);
       font-size: 1rem;
       outline: none;
-      box-shadow: var(--input-shadow);
-      transition: border 0.14s, box-shadow 0.13s;
-      min-width: 120px;
-      font-weight: 600;
-    }
-    .datepicker::placeholder, .search-input::placeholder {
-      color: #e7c873bb;
-      opacity: 1;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+      transition: all 0.2s ease-in-out;
+      min-width: 150px;
       font-weight: 500;
     }
-    .datepicker:focus, .search-input:focus {
-      border-color: var(--input-focus);
-      background: #fffbe9cc;
-      box-shadow: 0 1px 9px #5eead433;
+    .datepicker::placeholder, .search-input::placeholder {
+      color: #AAB7C4;
+      opacity: 1;
+      font-weight: 400;
     }
+    .datepicker:focus, .search-input:focus {
+      border-color: var(--color-primary);
+      background: #FFFFFF;
+      box-shadow: 0 0 0 3px rgba(var(--color-primary), 0.2), inset 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+
+    /* --- Tab Bar --- */
     .tab-bar {
-      margin: 18px 0 12px 0;
+      margin: 30px 0 25px 0;
       display: flex;
-      background: var(--tab-bg);
-      border-radius: 18px;
-      min-width: 180px;
-      box-shadow: 0 2.5px 11px #e7c87314;
-      border: 2px solid #e7c87377;
+      flex-wrap: wrap; /* Allow wrapping */
+      background: var(--color-background-light);
+      border-radius: var(--border-radius-md);
+      box-shadow: 0 5px 15px var(--color-shadow-light);
+      border: 1px solid var(--color-border);
       overflow: hidden;
       align-items: center;
       position: relative;
+      padding: 8px; /* Padding inside the tab bar */
     }
+
+    .tab-group {
+      display: flex;
+      flex: 1; /* Each group takes equal space */
+      min-width: 280px; /* Ensure groups don't get too small */
+    }
+
     .tab-btn {
       flex: 1;
-      padding: 12px 7px;
+      padding: 14px 10px;
       font-size: 1.05rem;
-      font-weight: 900;
+      font-weight: 700;
       border: none;
       background: none;
-      color: var(--tab-font);
-      letter-spacing: .6px;
+      color: var(--color-text-dark);
+      letter-spacing: .4px;
       cursor: pointer;
       outline: none;
-      border-right: 2px solid #e7c87388;
-      transition: background 0.13s, color 0.11s;
+      transition: all 0.2s ease-in-out;
       text-transform: uppercase;
-      border-radius: 0;
+      border-radius: var(--border-radius-sm); /* Rounded corners for individual tabs */
       position: relative;
       z-index: 1;
+      white-space: nowrap;
     }
-    .tab-btn:last-child { border-right: none; }
     .tab-btn:hover:not(.active) {
-      background: #ffe06622;
-      color: var(--gold);
-      transform: scale(1.035);
+      background: rgba(var(--color-primary), 0.05);
+      color: var(--color-primary);
+      transform: translateY(-1px);
     }
     .tab-btn.active {
-      background: linear-gradient(90deg, #fff 0%, #ffe06633 100%);
-      color: var(--tab-font-active);
-      font-weight: 900;
-      border-radius: 12px;
-      box-shadow: 0 2px 10px #ffe06633;
-      z-index: 1;
-      position: relative;
-      text-shadow: 0 1px 4px #fff4;
+      background: var(--gradient-tab-active);
+      color: var(--color-text-light);
+      font-weight: 800;
+      box-shadow: 0 4px 15px rgba(var(--color-primary), 0.3);
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      transform: translateY(-1px);
     }
+
     .capture-btn {
-      margin-left: 12px;
-      padding: 8px 18px;
-      border-radius: 10px;
+      margin-left: 15px;
+      padding: 10px 20px;
+      border-radius: var(--border-radius-md);
       border: none;
-      background: linear-gradient(92deg,#ffe066 40%,#5eead4 100%);
-      color: #23243e;
-      font-weight: 900;
-      font-size: 1rem;
-      letter-spacing: .8px;
-      box-shadow: 0 2px 10px #e7c87322;
+      background: var(--gradient-button);
+      color: var(--color-text-light);
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: .5px;
+      box-shadow: 0 4px 15px rgba(var(--color-secondary), 0.3);
       cursor: pointer;
-      transition: background 0.18s, color 0.12s, box-shadow 0.13s;
+      transition: all 0.2s ease-in-out;
       outline: none;
-      display: inline-block;
+      display: inline-flex; /* Use flex for icon and text alignment */
+      align-items: center;
+      justify-content: center;
       vertical-align: middle;
+      white-space: nowrap;
     }
     .capture-btn:hover, .capture-btn:focus {
-      background: linear-gradient(90deg,#5eead4 10%,#ffe066 100%);
-      color: #222;
-      box-shadow: 0 4px 19px #5eead433;
-      transform: scale(1.03);
+      background: var(--gradient-button-hover);
+      color: var(--color-text-light);
+      box-shadow: 0 6px 20px rgba(var(--color-primary), 0.4);
+      transform: translateY(-2px);
     }
+    .capture-btn span {
+      margin-right: 8px; /* Space between icon and text */
+      font-size: 1.2em;
+    }
+
+    /* --- Table Wrapper & Base Table Styles --- */
     .dashboard-table-wrapper {
-      background: var(--card);
-      border-radius: 18px;
-      box-shadow: var(--shadow-light), 0 1.5px 0 #fff3;
-      padding: 12px 2px;
+      background: var(--color-card-bg);
+      border-radius: var(--border-radius-md);
+      box-shadow: 0 8px 25px var(--color-shadow-light);
+      padding: 15px;
       overflow-x: auto;
-      border: 2px solid #f3e8c0;
-      min-height: 120px;
-      margin-top: 8px;
+      border: 1px solid var(--color-border);
+      min-height: 150px;
+      margin-top: 20px;
     }
+
     .dashboard-table {
       width: 100%;
       border-collapse: separate;
       border-spacing: 0;
       background: transparent;
-      border-radius: 16px;
-      min-width: 500px;
-      font-family: 'Inter', Arial, sans-serif;
-      font-size: 1.07rem;
-      box-shadow: 0 1.5px 0 #fff2;
-      overflow: hidden;
+      border-radius: var(--border-radius-md);
+      min-width: 600px; /* Ensure minimum width for scroll */
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      overflow: hidden; /* Ensures rounded corners apply */
       table-layout: auto;
     }
+
     .dashboard-table th, .dashboard-table td {
       text-align: left;
-      padding: 15px 16px;
-      border-bottom: 2px solid #f3f3fa;
-      transition: background 0.14s;
+      padding: 16px 20px;
+      border-bottom: 1px solid #F0F2F5; /* Lighter border for rows */
+      transition: background 0.15s ease;
     }
+
     .dashboard-table th {
-      background: linear-gradient(93deg, #fffbe9 0%, #e7c87333 100%);
-      color: #1d222c;
-      font-weight: 900;
-      font-size: 1.08rem;
+      background: var(--gradient-table-header);
+      color: var(--color-text-dark);
+      font-weight: 700;
+      font-size: 1rem;
       position: sticky;
       top: 0;
       z-index: 2;
-      text-shadow: 0 1.5px 4px #fff7;
-      border-bottom: 2.5px solid #ffe066;
-      letter-spacing: 0.2px;
-      font-family: inherit;
+      text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+      border-bottom: 2px solid var(--color-primary); /* Stronger header border */
+      letter-spacing: 0.3px;
       user-select: none;
     }
-    .dashboard-table tr {
-      transition: background 0.14s;
-    }
+    .dashboard-table th:first-child { border-top-left-radius: var(--border-radius-sm); }
+    .dashboard-table th:last-child { border-top-right-radius: var(--border-radius-sm); }
+
+
     .dashboard-table tr:nth-child(even) td {
-      background: var(--table-row-alt);
+      background: #FDFDFD; /* Slightly different background for even rows */
     }
     .dashboard-table tr:hover {
-      background: #fffbe9cc;
-      transform: scale(1.01);
+      background: rgba(var(--color-primary), 0.03); /* Subtle hover effect */
+      transform: scale(1.005);
+      box-shadow: 0 2px 8px rgba(var(--color-primary), 0.1);
+      position: relative;
+      z-index: 1;
     }
     .dashboard-table tr:last-child td {
       border-bottom: none;
     }
+
     .dashboard-table td {
-      color: var(--table-font);
-      font-size: 1.06rem;
-      font-weight: 600;
-      background: var(--table-row);
-      font-family: inherit;
-      border-radius: 4px;
-      min-width: 56px;
-      word-break: break-all;
+      color: var(--color-text-dark);
+      font-size: 0.95rem;
+      font-weight: 500;
+      background: var(--color-card-bg);
       vertical-align: middle;
+      word-break: break-word; /* Allow long words to break */
     }
-    /* --- NEW/MODIFIED STYLES FOR READABILITY --- */
+
+    /* --- Specific Cell Styles for Readability --- */
     .dashboard-table td.agent-name {
-      color: #1a1a1a; /* Darker color for better contrast */
-      font-weight: 800; /* Slightly bolder */
-      font-size: 1.08rem; /* Slightly larger */
-      background: #f3f3f8; /* Consistent background for names */
-      white-space: nowrap; /* Prevent text wrapping */
-      word-break: normal; /* Ensure normal word breaking if space allows */
+      color: var(--color-primary); /* Highlight agent names */
+      font-weight: 700;
+      font-size: 1rem;
+      background: rgba(var(--color-primary), 0.02);
+      white-space: nowrap;
+      min-width: 150px; /* Ensure enough space */
     }
     .dashboard-table td.agent-email {
-      color: #333; /* Keep it dark */
-      font-weight: 700; /* Bolder */
-      background: #f3f3f8; /* Keep the light background */
-      font-size: 1.02rem; /* Slightly smaller than name, but still clear */
-      word-break: break-all; /* Ensure long emails wrap */
+      color: var(--color-text-dark);
+      font-weight: 500;
+      font-size: 0.9rem;
+      background: rgba(var(--color-primary), 0.01);
+      word-break: break-all;
+      min-width: 180px;
     }
-    /* --- END NEW/MODIFIED STYLES --- */
 
+    /* --- Grand Total --- */
     .grand-total {
-      font-weight: 900;
-      color: #e7c873;
-      background: #fffbe9;
-      border-radius: 11px;
-      padding: 10px 8px;
+      font-weight: 800;
+      color: var(--color-accent);
+      background: rgba(var(--color-accent), 0.1);
+      border-radius: var(--border-radius-sm);
+      padding: 8px 12px;
       display: inline-block;
-      min-width: 48px;
+      min-width: 60px;
       text-align: center;
-      font-size: 1.11rem;
-      border: 2px solid #ffe06688;
-      text-shadow: 0 1.5px 4px #e7c87333;
-      box-shadow: 0 0 0 2px #fffbe988;
+      font-size: 1.05rem;
+      border: 1px solid rgba(var(--color-accent), 0.3);
+      text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
+      box-shadow: 0 2px 5px rgba(var(--color-accent), 0.1);
     }
+
+    /* --- No Data Message --- */
     .no-data {
       text-align: center;
-      padding: 28px 0;
-      color: var(--accent-dark);
-      font-size: 1.05rem;
-      font-weight: 700;
-      border-radius: 14px;
-      margin: 10px 2vw;
-      background: #fffbe9;
-      box-shadow: 0 2.5px 10px #ffe06622;
-      border: 2px solid #ffe06655;
+      padding: 40px 20px;
+      color: var(--color-text-dark);
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: var(--border-radius-md);
+      margin: 20px auto;
+      background: var(--color-background-light);
+      box-shadow: 0 5px 15px var(--color-shadow-light);
+      border: 1px solid var(--color-border);
       letter-spacing: 0.2px;
+      max-width: 500px;
     }
-    /* Hourly Table playful */
+    .no-data br { margin-bottom: 10px; }
+
+    /* --- Hourly Table Specific Styles --- */
     .hourly-main-header {
-      background: linear-gradient(90deg, #fffbe9 0%, #e7c87333 100%) !important;
-      color: #2d2d2d !important;
-      font-weight: 900 !important;
+      background: var(--gradient-table-header) !important;
+      color: var(--color-text-dark) !important;
+      font-weight: 800 !important;
       text-align: center;
       font-size: 1.05rem;
-      border-bottom: 2.5px solid #ffe066 !important;
-      font-family: inherit;
+      border-bottom: 2px solid var(--color-primary) !important;
     }
     .hourly-hourgroup, .hourly-hourgroup2 {
-      background: linear-gradient(90deg, #fffbe9 0%, #e7c87333 100%) !important;
-      color: #23243e !important;
+      background: var(--gradient-hourly-group1) !important;
+      color: var(--color-primary) !important;
       text-align: center;
-      font-family: inherit;
-      font-weight: 900;
-      border-bottom: 2px solid #ffe06633 !important;
+      font-weight: 700;
+      border-bottom: 1px solid rgba(var(--color-primary), 0.2) !important;
     }
     .hourly-hourgroup2 {
-      background: linear-gradient(90deg, #ffe6e0 0%, #e7c87333 100%) !important;
-      color: #e7c873 !important;
-      border-bottom: 2px solid #e7c87355 !important;
+      background: var(--gradient-hourly-group2) !important;
+      color: var(--color-accent) !important;
+      border-bottom: 1px solid rgba(var(--color-accent), 0.2) !important;
     }
     .hourly-subheader {
-      background: #fffbe9 !important;
-      color: #23243e !important;
-      font-weight: 900;
+      background: rgba(var(--color-background-light), 0.8) !important;
+      color: var(--color-text-dark) !important;
+      font-weight: 600;
       text-align: center;
-      border-bottom: 1.5px solid #ffe06633 !important;
-      font-family: inherit;
+      border-bottom: 1px solid #E0E6ED !important;
+      font-size: 0.9rem;
+      padding: 10px 5px; /* Smaller padding for subheaders */
     }
     .hourly-hourgroup .hourly-subheader, .hourly-hourgroup2 .hourly-subheader {
       background: inherit !important;
       color: inherit !important;
     }
     .hourly-metric {
-      color: #23243e !important;
-      font-weight: 700;
+      color: var(--color-text-dark) !important;
+      font-weight: 600;
       text-align: center;
-      font-size: 1.07rem;
-      background: #fffbe999;
-      border-radius: 6px;
-      min-width: 32px;
-      border: 1px solid #fffbe9;
+      font-size: 0.95rem;
+      background: rgba(var(--color-background-light), 0.7);
+      border-radius: 4px;
+      min-width: 40px;
+      border: 1px solid #F0F2F5;
+      padding: 10px 8px;
     }
-    .hourly-metric0 { background: #e7c87322; }
-    .hourly-metric1 { background: #ffe6e022; }
+    .hourly-metric0 { background: rgba(var(--color-primary), 0.05); }
+    .hourly-metric1 { background: rgba(var(--color-accent), 0.05); }
+
     .grand-total-hour {
-      background: #fffbe9 !important;
-      color: #222 !important; /* BLACK FONT FOR GRAND TOTAL */
+      background: var(--gradient-premium) !important;
+      color: var(--color-text-dark) !important; /* Darker font for grand total */
       font-weight: 900;
       text-align: center;
-      font-size: 1.12rem;
-      border-radius: 8px;
-      border: 2px solid #ffe06688;
-      text-shadow: none;
+      font-size: 1.1rem;
+      border-radius: var(--border-radius-sm);
+      border: 2px solid rgba(255, 215, 0, 0.5);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 8px rgba(255, 215, 0, 0.2);
     }
-    @media (max-width: 650px) {
-      .dashboard-header { flex-direction: column; align-items: flex-start; gap: 7px; }
-      .dashboard-header h1 { font-size: 1.1rem;}
-      .premium-badge { font-size: 0.77rem; padding: 3px 9px;}
-      .controls { flex-direction: column; align-items: stretch; padding: 6px 2vw;}
-      .file-label, .datepicker, .search-input { width: 100%; min-width: unset; }
-      .tab-bar { flex-direction: column; border-radius: 13px;}
-      .tab-btn { border-right: none; border-bottom: 2px solid #e7c87377; border-radius: 0;}
-      .tab-btn:last-child { border-bottom: none;}
-      .tab-btn.active { border-radius: 11px;}
-      .dashboard-table th,.dashboard-table td { font-size: 0.89rem;}
-      .grand-total, .grand-total-hour { font-size: 0.88rem; padding: 4px 7px;}
-      .no-data { padding: 13px 0; font-size: 0.89rem;}
-      .dashboard-container { padding: 9px 1vw;}
+
+    /* --- Responsive Adjustments --- */
+    @media (max-width: 992px) {
+      .dashboard-container {
+        margin: 30px auto;
+        padding: 30px;
+      }
+      .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+      }
+      .dashboard-header h1 {
+        font-size: 2.2rem;
+      }
+      .premium-badge {
+        margin-left: 0;
+        margin-top: 10px;
+        font-size: 0.9rem;
+        padding: 6px 15px;
+      }
+      .controls {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 10px;
+        width: 100%;
+        justify-content: center;
+      }
+      .file-label, .datepicker, .search-input {
+        width: 100%;
+        min-width: unset;
+      }
+      .tab-bar {
+        flex-direction: column;
+        border-radius: var(--border-radius-md);
+        padding: 10px;
+      }
+      .tab-group {
+        flex-direction: column;
+        width: 100%;
+        min-width: unset;
+      }
+      .tab-btn {
+        border-bottom: 1px solid var(--color-border);
+        border-radius: 0;
+        padding: 12px 10px;
+      }
+      .tab-btn:last-child {
+        border-bottom: none;
+      }
+      .tab-btn.active {
+        border-radius: var(--border-radius-sm);
+      }
+      .capture-btn {
+        margin-left: 0;
+        margin-top: 10px;
+        width: 100%;
+        font-size: 0.9rem;
+        padding: 10px 15px;
+      }
+      .dashboard-table th, .dashboard-table td {
+        font-size: 0.85rem;
+        padding: 12px 15px;
+      }
+      .dashboard-table td.agent-name, .dashboard-table td.agent-email {
+        font-size: 0.9rem;
+      }
+      .grand-total, .grand-total-hour {
+        font-size: 0.9rem;
+        padding: 6px 10px;
+      }
+      .no-data {
+        padding: 25px 15px;
+        font-size: 1rem;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .dashboard-container {
+        padding: 20px;
+        margin: 20px auto;
+      }
+      .dashboard-header h1 {
+        font-size: 1.8rem;
+      }
+      .premium-badge {
+        font-size: 0.8rem;
+        padding: 5px 12px;
+      }
+      .file-label, .datepicker, .search-input, .tab-btn, .capture-btn {
+        font-size: 0.9rem;
+        padding: 10px 15px;
+      }
+      .dashboard-table {
+        min-width: 400px; /* Allow more aggressive shrinking */
+      }
+      .dashboard-table th, .dashboard-table td {
+        font-size: 0.8rem;
+        padding: 10px 12px;
+      }
+      .dashboard-table td.agent-name, .dashboard-table td.agent-email {
+        font-size: 0.85rem;
+      }
+      .hourly-subheader {
+        font-size: 0.8rem;
+        padding: 8px 3px;
+      }
+      .hourly-metric {
+        font-size: 0.85rem;
+        min-width: 30px;
+        padding: 8px 5px;
+      }
     }
   </style>
 </head>
@@ -423,20 +585,20 @@
         </h1>
       </div>
       <div class="controls">
-        <label for="file-upload" class="file-label">Upload Excel</label>
+        <label for="file-upload" class="file-label"><span>📁</span> Upload Excel</label>
         <input type="file" id="file-upload" accept=".xlsx,.xls,.xlsm,.xlsb,.xltx,.xltm,.csv" />
         <input type="text" class="search-input" id="email-search" placeholder="Search agent emails (comma/space separated)" />
         <input type="text" class="datepicker" id="date-filter" placeholder="Filter by date" />
       </div>
     </div>
     <div class="tab-bar" id="tab-bar">
-      <div style="display: flex; width: 100%;">
+      <div class="tab-group">
         <button class="tab-btn active" data-tab="summary" id="tab-summary-btn">Agent Summary</button>
-        <button class="capture-btn" id="capture-summary-btn" title="Copy table as image to clipboard" tabindex="0" style="margin-left: 0;">📸 Copy Image</button>
+        <button class="capture-btn" id="capture-summary-btn" title="Copy table as image to clipboard" tabindex="0"><span>📸</span> Copy Image</button>
       </div>
-      <div style="display: flex; width: 100%;">
+      <div class="tab-group">
         <button class="tab-btn" data-tab="hourly" id="tab-hourly-btn">Hourly Interval</button>
-        <button class="capture-btn" id="capture-hourly-btn" title="Copy table as image to clipboard" tabindex="0" style="margin-left: 0;">📸 Copy Image</button>
+        <button class="capture-btn" id="capture-hourly-btn" title="Copy table as image to clipboard" tabindex="0"><span>📸</span> Copy Image</button>
       </div>
     </div>
     <div class="dashboard-table-wrapper" id="dashboard-table-container"></div>
@@ -473,7 +635,6 @@
     }
 
     document.querySelector('#file-upload').addEventListener('change', handleFile, false);
-    // REMOVED: document.querySelector('.file-label').addEventListener('click', () => { document.querySelector('#file-upload').click(); });
     document.getElementById('email-search').addEventListener('input', renderTable);
     document.getElementById('date-filter').addEventListener('input', renderTable);
 
@@ -489,28 +650,25 @@
 
     function captureTable(name) {
       const tableWrapper = document.getElementById('dashboard-table-container');
-      const tableElement = tableWrapper.querySelector('.dashboard-table'); // Get the actual table inside the wrapper
+      const tableElement = tableWrapper.querySelector('.dashboard-table');
 
       if (!tableElement) {
         alert('No table found to capture.');
         return;
       }
 
-      // Temporarily remove overflow-x to ensure html2canvas captures full width
       const originalOverflowX = tableWrapper.style.overflowX;
       tableWrapper.style.overflowX = 'visible';
 
-      html2canvas(tableElement, { // Capture the tableElement, not the wrapper
+      html2canvas(tableElement, {
         backgroundColor: null,
         scale: 2,
         useCORS: true,
-        // These options help capture the full scrollable content
         scrollX: 0,
         scrollY: 0,
         windowWidth: tableElement.scrollWidth,
         windowHeight: tableElement.scrollHeight
       }).then(canvas => {
-        // Restore original overflow-x
         tableWrapper.style.overflowX = originalOverflowX;
 
         if (navigator.clipboard && navigator.clipboard.write) {
@@ -527,7 +685,6 @@
           alert('Your browser does not support copying images directly to the clipboard. Please right-click on the table and select "Copy Image" or use the download option if available.');
         }
       }).catch(error => {
-        // Restore original overflow-x in case of error
         tableWrapper.style.overflowX = originalOverflowX;
         console.error('Error capturing table:', error);
         alert('An error occurred while capturing the table.');
@@ -553,9 +710,6 @@
       reader.onload = function(evt) {
         const data = evt.target.result;
         let workbook;
-        // The XLSX library handles various Excel formats automatically based on file content,
-        // so explicit type handling for each extension is not strictly necessary here,
-        // but checking for CSV is still good practice.
         if (file.name.endsWith('.csv')) {
           workbook = XLSX.read(data, {type: 'binary'});
         } else {
@@ -566,11 +720,11 @@
         const json = XLSX.utils.sheet_to_json(worksheet, {defval: ""});
         intervalColumnKey = detectIntervalCol(json[0]);
         originalData = json
-          .filter(row => !isRowEmpty(row) && row['Customer service name'] && row['Customer Service Email'])
+          .filter(row => !isRowEmpty(row) && (row['Customer service name'] || row['Customer Service Name'] || row['Customer'] || row['Name']) && (row['Customer Service Email'] || row['Email']))
           .map(row => ({
             date: row['Date'] || row['date'] || '',
             name: (row['Customer service name'] || row['Customer Service Name'] || row['Customer'] || row['Name'] || '').trim(),
-            email: (row['Customer Service Email'] || row['Email'] || row['Customer Service Email'] || '').trim().toLowerCase(),
+            email: (row['Customer Service Email'] || row['Email'] || '').trim().toLowerCase(),
             status: (row['Current Status'] || row['Status'] || row['Current St.'] || '').toLowerCase(),
             notes: row['Notes'] || '',
             duration: row['Duration'] || 0,
@@ -646,8 +800,8 @@
               <tr>
                 <th>Customer Service Name</th>
                 <th>Customer Service Email</th>
-                <th>IM</th>
-                <th>Ticket</th>
+                <th>IM Volume</th>
+                <th>Ticket Handle</th>
                 <th>Grand Total</th>
               </tr>
             </thead>
@@ -671,7 +825,7 @@
     function renderHourlyAgentMirrorTable() {
       const wrapper = document.getElementById('dashboard-table-container');
       if (!intervalColumnKey) {
-        wrapper.innerHTML = `<div class="no-data">No hourly interval data to display.<br>Upload a file or adjust your filters.</div>`;
+        wrapper.innerHTML = `<div class="no-data">No hourly interval data found in the uploaded file.<br>Please ensure your file contains an 'interval' or '60min' column.</div>`;
         return;
       }
       const allIntervalsSet = new Set();
@@ -704,9 +858,9 @@
         agentMap[key].intervals[interval].ticket_handle += row.ticket_handle;
       });
 
-      function agentGrandTotal(agent) {
+      function agentGrandTotal(agentKeyStr) {
         return filteredData
-          .filter(row => agentKey(row) === agent)
+          .filter(row => agentKey(row) === agentKeyStr)
           .reduce((acc, row) => acc + row.im_volume + row.ticket_handle, 0);
       }
 
@@ -720,16 +874,16 @@
         html = `<div class="no-data">No hourly interval data to display.<br>Upload a file or adjust your filters.</div>`;
       } else {
         html = `<div style="width:100%;">
-          <table class="dashboard-table" style="width:100%;">
+          <table class="dashboard-table">
             <thead>
               <tr>
-                <th class="hourly-main-header" style="min-width:130px;">Customer Service Name</th>`;
+                <th class="hourly-main-header" style="min-width:180px;">Customer Service Name</th>`;
         allIntervals.forEach((interval, i) => {
           html += `<th class="${i%2===0?'hourly-hourgroup':'hourly-hourgroup2'}" colspan="2">${interval}</th>`;
         });
-        html += `<th class="grand-total-hour" rowspan="2" style="min-width:70px;">Grand Total</th></tr>
+        html += `<th class="grand-total-hour" rowspan="2" style="min-width:90px;">Grand Total</th></tr>
             <tr>
-              <th class="hourly-main-header"></th>`;
+              <th class="hourly-main-header"></th>`; /* Empty cell for alignment */
         allIntervals.forEach((interval, i) => {
           html += `<th class="${i%2===0?'hourly-hourgroup':'hourly-hourgroup2'} hourly-subheader">IM</th>
                    <th class="${i%2===0?'hourly-hourgroup':'hourly-hourgroup2'} hourly-subheader">Ticket</th>`;
