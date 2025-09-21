@@ -5,43 +5,51 @@
   <title>Agent Productivity Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <style>
-    /* --- Global Variables & Base Styles --- */
+    /* --- Global Variables & Base Styles (TikTok Inspired) --- */
     :root {
-      --color-primary: #4A90E2; /* A vibrant blue */
-      --color-secondary: #50E3C2; /* A fresh teal */
-      --color-accent: #F5A623; /* A warm orange for highlights */
-      --color-text-dark: #2C3E50; /* Dark charcoal for main text */
-      --color-text-light: #ECF0F1; /* Light gray for contrast */
-      --color-background-light: #F8F9FA; /* Very light gray */
-      --color-background-dark: #34495E; /* Dark blue-gray */
-      --color-card-bg: #FFFFFF;
-      --color-border: #E0E6ED;
-      --color-shadow-light: rgba(0, 0, 0, 0.08);
-      --color-shadow-medium: rgba(0, 0, 0, 0.15);
-      --color-shadow-deep: rgba(0, 0, 0, 0.25);
+      --tiktok-black: #121212;
+      --tiktok-dark-grey: #222222;
+      --tiktok-light-grey: #333333;
+      --tiktok-white: #FFFFFF;
+      --tiktok-red: #FE2C55;
+      --tiktok-cyan: #25F4EE;
+      --tiktok-purple: #69C9D0; /* A blend for gradients */
+
+      --color-bg-main: var(--tiktok-black);
+      --color-bg-card: var(--tiktok-dark-grey);
+      --color-text-main: var(--tiktok-white);
+      --color-text-secondary: #B0B0B0;
+      --color-border-subtle: rgba(255, 255, 255, 0.1);
+      --color-border-strong: rgba(255, 255, 255, 0.2);
+
+      --shadow-tiktok: 0 5px 15px rgba(0, 0, 0, 0.4), 0 0 10px rgba(254, 44, 85, 0.3), 0 0 10px rgba(37, 244, 238, 0.3);
+      --shadow-tiktok-hover: 0 8px 25px rgba(0, 0, 0, 0.6), 0 0 15px rgba(254, 44, 85, 0.5), 0 0 15px rgba(37, 244, 238, 0.5);
+      --shadow-glow-red: 0 0 12px var(--tiktok-red);
+      --shadow-glow-cyan: 0 0 12px var(--tiktok-cyan);
 
       --font-heading: 'Montserrat', sans-serif;
       --font-body: 'Inter', sans-serif;
+      --font-mono: 'Roboto Mono', monospace;
 
       --border-radius-sm: 8px;
       --border-radius-md: 16px;
       --border-radius-lg: 24px;
-      --border-radius-xl: 32px;
+      --border-radius-xl: 36px;
 
-      --gradient-header: linear-gradient(90deg, var(--color-primary) 0%, var(--color-secondary) 100%);
-      --gradient-button: linear-gradient(90deg, var(--color-secondary) 0%, var(--color-primary) 100%);
-      --gradient-button-hover: linear-gradient(90deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+      --gradient-tiktok-header: linear-gradient(90deg, var(--tiktok-red) 0%, var(--tiktok-cyan) 100%);
+      --gradient-tiktok-button: linear-gradient(90deg, var(--tiktok-red) 0%, var(--tiktok-cyan) 100%);
+      --gradient-tiktok-button-hover: linear-gradient(90deg, var(--tiktok-cyan) 0%, var(--tiktok-red) 100%);
       --gradient-premium: linear-gradient(90deg, #FFD700 0%, #FFA500 100%); /* Gold to Orange */
-      --gradient-tab-active: linear-gradient(90deg, var(--color-primary) 0%, var(--color-secondary) 100%);
-      --gradient-table-header: linear-gradient(90deg, var(--color-background-light) 0%, rgba(var(--color-primary), 0.1) 100%);
-      --gradient-hourly-group1: linear-gradient(90deg, rgba(var(--color-primary), 0.05) 0%, rgba(var(--color-secondary), 0.05) 100%);
-      --gradient-hourly-group2: linear-gradient(90deg, rgba(var(--color-accent), 0.05) 0%, rgba(var(--color-primary), 0.05) 100%);
+      --gradient-tab-active: linear-gradient(90deg, var(--tiktok-red) 0%, var(--tiktok-cyan) 100%);
+      --gradient-table-header: linear-gradient(90deg, var(--tiktok-light-grey) 0%, rgba(254, 44, 85, 0.1) 100%);
+      --gradient-hourly-group1: linear-gradient(90deg, rgba(254, 44, 85, 0.08) 0%, rgba(37, 244, 238, 0.08) 100%);
+      --gradient-hourly-group2: linear-gradient(90deg, rgba(37, 244, 238, 0.08) 0%, rgba(254, 44, 85, 0.08) 100%);
     }
 
     *, *::before, *::after {
@@ -49,245 +57,295 @@
     }
 
     html, body {
-      background: linear-gradient(135deg, #F0F2F5 0%, #E0E6ED 100%);
+      background: var(--color-bg-main);
       margin: 0;
       padding: 0;
       font-family: var(--font-body);
-      color: var(--color-text-dark);
+      color: var(--color-text-main);
       min-height: 100vh;
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
     }
 
     /* --- Dashboard Container --- */
     .dashboard-container {
-      background: var(--color-card-bg);
+      background: var(--color-bg-card);
       border-radius: var(--border-radius-xl);
-      box-shadow: 0 15px 45px var(--color-shadow-medium);
-      max-width: 1200px; /* Increased max-width for more space */
-      margin: 60px auto 40px;
-      padding: 40px;
-      border: 1px solid var(--color-border);
-      min-height: 400px;
+      box-shadow: var(--shadow-tiktok);
+      max-width: 1300px;
+      margin: 80px auto 60px;
+      padding: 50px;
+      border: 1px solid var(--color-border-strong);
+      min-height: 500px;
       position: relative;
       z-index: 2;
       transition: all 0.3s ease-in-out;
     }
     .dashboard-container:hover {
-      box-shadow: 0 20px 60px var(--color-shadow-deep);
+      box-shadow: var(--shadow-tiktok-hover);
+      transform: translateY(-5px);
     }
 
     /* --- Header --- */
     .dashboard-header {
       display: flex;
-      flex-wrap: wrap; /* Allow wrapping on smaller screens */
+      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 25px;
-      margin-bottom: 40px;
-      padding-bottom: 20px;
-      border-bottom: 2px solid var(--color-border);
+      gap: 30px;
+      margin-bottom: 50px;
+      padding-bottom: 25px;
+      border-bottom: 2px solid var(--color-border-subtle);
     }
 
     .dashboard-header h1 {
       font-family: var(--font-heading);
-      font-size: 2.8rem; /* Larger heading */
+      font-size: 3.8rem;
       font-weight: 900;
       margin: 0;
-      letter-spacing: 1.5px;
-      background: var(--gradient-header);
+      letter-spacing: 2.5px;
+      background: var(--gradient-tiktok-header);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
       text-fill-color: transparent;
-      text-shadow: 0 4px 15px rgba(var(--color-primary), 0.3);
+      text-shadow: 0 6px 25px rgba(254, 44, 85, 0.4);
       user-select: none;
       display: flex;
       align-items: center;
-      flex-shrink: 0; /* Prevent shrinking */
+      flex-shrink: 0;
     }
 
     .premium-badge {
-      margin-left: 18px;
-      padding: 8px 20px;
-      font-size: 1.1rem;
+      margin-left: 25px;
+      padding: 10px 25px;
+      font-size: 1.3rem;
       border-radius: var(--border-radius-md);
       background: var(--gradient-premium);
-      color: #8B4513; /* Darker brown for contrast on gold */
+      color: #4A2C00; /* Dark brown for contrast on gold */
       font-weight: 800;
-      letter-spacing: .8px;
-      border: 2px solid rgba(255, 215, 0, 0.6);
-      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4), 0 1px 3px rgba(255, 255, 255, 0.5);
+      letter-spacing: 1.2px;
+      border: 2px solid rgba(255, 215, 0, 0.8);
+      box-shadow: 0 5px 20px rgba(255, 215, 0, 0.6), 0 2px 5px rgba(255, 255, 255, 0.7);
       display: inline-block;
       vertical-align: middle;
       user-select: none;
       transition: all 0.2s ease-in-out;
       text-transform: uppercase;
+      animation: pulse-premium 2s infinite alternate;
     }
     .premium-badge:hover {
-      transform: translateY(-2px) scale(1.02);
-      box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6), 0 2px 5px rgba(255, 255, 255, 0.7);
+      transform: translateY(-4px) scale(1.04);
+      box-shadow: 0 8px 25px rgba(255, 215, 0, 0.8), 0 3px 8px rgba(255, 255, 255, 0.9);
+    }
+    @keyframes pulse-premium {
+      0% { transform: scale(1); box-shadow: 0 5px 20px rgba(255, 215, 0, 0.6); }
+      100% { transform: scale(1.02); box-shadow: 0 8px 25px rgba(255, 215, 0, 0.8); }
     }
 
     /* --- Controls --- */
     .controls {
       display: flex;
       flex-wrap: wrap;
-      gap: 12px;
+      gap: 18px;
       align-items: center;
-      background: var(--color-background-light);
+      background: var(--tiktok-light-grey);
       border-radius: var(--border-radius-md);
-      box-shadow: 0 5px 15px var(--color-shadow-light);
-      padding: 10px 15px;
-      border: 1px solid var(--color-border);
-      flex-grow: 1; /* Allow controls to take available space */
-      justify-content: flex-end; /* Align items to the right */
+      box-shadow: var(--shadow-tiktok);
+      padding: 15px 20px;
+      border: 1px solid var(--color-border-subtle);
+      flex-grow: 1;
+      justify-content: flex-end;
     }
 
     input[type="file"] { display: none; }
 
     .file-label {
-      background: var(--gradient-button);
-      color: var(--color-text-light);
+      background: var(--gradient-tiktok-button);
+      color: var(--tiktok-white);
       font-weight: 700;
-      letter-spacing: .5px;
-      padding: 12px 25px;
+      letter-spacing: .8px;
+      padding: 16px 30px;
       border-radius: var(--border-radius-md);
       cursor: pointer;
-      font-size: 1rem;
-      box-shadow: 0 4px 15px rgba(var(--color-primary), 0.3);
+      font-size: 1.1rem;
+      box-shadow: var(--shadow-tiktok);
       border: none;
-      transition: all 0.2s ease-in-out;
+      transition: all 0.3s ease-in-out;
       text-transform: uppercase;
       outline: none;
-      white-space: nowrap; /* Prevent text wrapping */
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .file-label span {
+      margin-right: 12px;
+      font-size: 1.4em;
+      line-height: 1;
+      text-shadow: 1px 1px 0 var(--tiktok-red), -1px -1px 0 var(--tiktok-cyan); /* TikTok text shadow */
+    }
+    .file-label::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.2);
+      transform: skewX(-30deg);
+      transition: all 0.5s ease;
+    }
+    .file-label:hover::before {
+      left: 100%;
     }
     .file-label:hover, .file-label:focus {
-      background: var(--gradient-button-hover);
-      box-shadow: 0 6px 20px rgba(var(--color-secondary), 0.4);
-      transform: translateY(-2px);
+      background: var(--gradient-tiktok-button-hover);
+      box-shadow: var(--shadow-tiktok-hover), var(--shadow-glow-red);
+      transform: translateY(-3px);
     }
 
     .datepicker, .search-input {
       font-family: var(--font-body);
-      padding: 12px 15px;
+      padding: 16px 20px;
       border-radius: var(--border-radius-md);
-      background: var(--color-background-light);
-      color: var(--color-text-dark);
-      border: 1px solid var(--color-border);
-      font-size: 1rem;
+      background: var(--tiktok-dark-grey);
+      color: var(--tiktok-white);
+      border: 1px solid var(--color-border-subtle);
+      font-size: 1.1rem;
       outline: none;
-      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
-      transition: all 0.2s ease-in-out;
-      min-width: 150px;
-      font-weight: 500;
-    }
-    .datepicker::placeholder, .search-input::placeholder {
-      color: #AAB7C4;
-      opacity: 1;
+      box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease-in-out;
+      min-width: 200px;
       font-weight: 400;
     }
+    .datepicker::placeholder, .search-input::placeholder {
+      color: var(--color-text-secondary);
+      opacity: 1;
+      font-weight: 300;
+    }
     .datepicker:focus, .search-input:focus {
-      border-color: var(--color-primary);
-      background: #FFFFFF;
-      box-shadow: 0 0 0 3px rgba(var(--color-primary), 0.2), inset 0 1px 3px rgba(0, 0, 0, 0.08);
+      border-color: var(--tiktok-red);
+      background: var(--tiktok-light-grey);
+      box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.4), var(--shadow-glow-red);
     }
 
     /* --- Tab Bar --- */
     .tab-bar {
-      margin: 30px 0 25px 0;
+      margin: 40px 0 35px 0;
       display: flex;
-      flex-wrap: wrap; /* Allow wrapping */
-      background: var(--color-background-light);
+      flex-wrap: wrap;
+      background: var(--tiktok-dark-grey);
       border-radius: var(--border-radius-md);
-      box-shadow: 0 5px 15px var(--color-shadow-light);
-      border: 1px solid var(--color-border);
+      box-shadow: var(--shadow-tiktok);
+      border: 1px solid var(--color-border-subtle);
       overflow: hidden;
       align-items: center;
       position: relative;
-      padding: 8px; /* Padding inside the tab bar */
+      padding: 12px;
     }
 
     .tab-group {
       display: flex;
-      flex: 1; /* Each group takes equal space */
-      min-width: 280px; /* Ensure groups don't get too small */
+      flex: 1;
+      min-width: 350px;
+      margin: 6px;
     }
 
     .tab-btn {
       flex: 1;
-      padding: 14px 10px;
-      font-size: 1.05rem;
+      padding: 18px 15px;
+      font-size: 1.15rem;
       font-weight: 700;
       border: none;
       background: none;
-      color: var(--color-text-dark);
-      letter-spacing: .4px;
+      color: var(--color-text-secondary);
+      letter-spacing: .6px;
       cursor: pointer;
       outline: none;
-      transition: all 0.2s ease-in-out;
+      transition: all 0.3s ease-in-out;
       text-transform: uppercase;
-      border-radius: var(--border-radius-sm); /* Rounded corners for individual tabs */
+      border-radius: var(--border-radius-sm);
       position: relative;
       z-index: 1;
       white-space: nowrap;
     }
     .tab-btn:hover:not(.active) {
-      background: rgba(var(--color-primary), 0.05);
-      color: var(--color-primary);
-      transform: translateY(-1px);
+      background: rgba(254, 44, 85, 0.1);
+      color: var(--tiktok-red);
+      transform: translateY(-2px);
     }
     .tab-btn.active {
       background: var(--gradient-tab-active);
-      color: var(--color-text-light);
+      color: var(--tiktok-white);
       font-weight: 800;
-      box-shadow: 0 4px 15px rgba(var(--color-primary), 0.3);
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-      transform: translateY(-1px);
+      box-shadow: var(--shadow-tiktok), var(--shadow-glow-red);
+      text-shadow: 1px 1px 0 var(--tiktok-red), -1px -1px 0 var(--tiktok-cyan); /* TikTok text shadow */
+      transform: translateY(-2px);
     }
 
     .capture-btn {
-      margin-left: 15px;
-      padding: 10px 20px;
+      margin-left: 20px;
+      padding: 14px 25px;
       border-radius: var(--border-radius-md);
       border: none;
-      background: var(--gradient-button);
-      color: var(--color-text-light);
+      background: var(--gradient-tiktok-button);
+      color: var(--tiktok-white);
       font-weight: 700;
-      font-size: 0.95rem;
-      letter-spacing: .5px;
-      box-shadow: 0 4px 15px rgba(var(--color-secondary), 0.3);
+      font-size: 1.05rem;
+      letter-spacing: .7px;
+      box-shadow: var(--shadow-tiktok);
       cursor: pointer;
-      transition: all 0.2s ease-in-out;
+      transition: all 0.3s ease-in-out;
       outline: none;
-      display: inline-flex; /* Use flex for icon and text alignment */
+      display: inline-flex;
       align-items: center;
       justify-content: center;
       vertical-align: middle;
       white-space: nowrap;
-    }
-    .capture-btn:hover, .capture-btn:focus {
-      background: var(--gradient-button-hover);
-      color: var(--color-text-light);
-      box-shadow: 0 6px 20px rgba(var(--color-primary), 0.4);
-      transform: translateY(-2px);
+      position: relative;
+      overflow: hidden;
     }
     .capture-btn span {
-      margin-right: 8px; /* Space between icon and text */
-      font-size: 1.2em;
+      margin-right: 10px;
+      font-size: 1.3em;
+      line-height: 1;
+      text-shadow: 1px 1px 0 var(--tiktok-red), -1px -1px 0 var(--tiktok-cyan); /* TikTok text shadow */
+    }
+    .capture-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.2);
+      transform: skewX(-30deg);
+      transition: all 0.5s ease;
+    }
+    .capture-btn:hover::before {
+      left: 100%;
+    }
+    .capture-btn:hover, .capture-btn:focus {
+      background: var(--gradient-tiktok-button-hover);
+      color: var(--tiktok-white);
+      box-shadow: var(--shadow-tiktok-hover), var(--shadow-glow-cyan);
+      transform: translateY(-3px);
     }
 
     /* --- Table Wrapper & Base Table Styles --- */
     .dashboard-table-wrapper {
-      background: var(--color-card-bg);
+      background: var(--tiktok-dark-grey);
       border-radius: var(--border-radius-md);
-      box-shadow: 0 8px 25px var(--color-shadow-light);
-      padding: 15px;
+      box-shadow: var(--shadow-tiktok);
+      padding: 25px;
       overflow-x: auto;
-      border: 1px solid var(--color-border);
-      min-height: 150px;
-      margin-top: 20px;
+      border: 1px solid var(--color-border-subtle);
+      min-height: 200px;
+      margin-top: 30px;
     }
 
     .dashboard-table {
@@ -296,31 +354,31 @@
       border-spacing: 0;
       background: transparent;
       border-radius: var(--border-radius-md);
-      min-width: 600px; /* Ensure minimum width for scroll */
+      min-width: 800px;
       font-family: var(--font-body);
-      font-size: 0.95rem;
-      overflow: hidden; /* Ensures rounded corners apply */
+      font-size: 1rem;
+      overflow: hidden;
       table-layout: auto;
     }
 
     .dashboard-table th, .dashboard-table td {
       text-align: left;
-      padding: 16px 20px;
-      border-bottom: 1px solid #F0F2F5; /* Lighter border for rows */
-      transition: background 0.15s ease;
+      padding: 20px 25px;
+      border-bottom: 1px solid var(--color-border-subtle);
+      transition: background 0.2s ease;
     }
 
     .dashboard-table th {
       background: var(--gradient-table-header);
-      color: var(--color-text-dark);
+      color: var(--tiktok-white);
       font-weight: 700;
-      font-size: 1rem;
+      font-size: 1.1rem;
       position: sticky;
       top: 0;
       z-index: 2;
-      text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
-      border-bottom: 2px solid var(--color-primary); /* Stronger header border */
-      letter-spacing: 0.3px;
+      text-shadow: 1px 1px 0 var(--tiktok-red), -1px -1px 0 var(--tiktok-cyan); /* TikTok text shadow */
+      border-bottom: 2px solid var(--tiktok-red);
+      letter-spacing: 0.5px;
       user-select: none;
     }
     .dashboard-table th:first-child { border-top-left-radius: var(--border-radius-sm); }
@@ -328,12 +386,12 @@
 
 
     .dashboard-table tr:nth-child(even) td {
-      background: #FDFDFD; /* Slightly different background for even rows */
+      background: rgba(255, 255, 255, 0.03);
     }
     .dashboard-table tr:hover {
-      background: rgba(var(--color-primary), 0.03); /* Subtle hover effect */
-      transform: scale(1.005);
-      box-shadow: 0 2px 8px rgba(var(--color-primary), 0.1);
+      background: rgba(254, 44, 85, 0.1);
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(254, 44, 85, 0.2);
       position: relative;
       z-index: 1;
     }
@@ -342,170 +400,227 @@
     }
 
     .dashboard-table td {
-      color: var(--color-text-dark);
-      font-size: 0.95rem;
-      font-weight: 500;
-      background: var(--color-card-bg);
+      color: var(--tiktok-white);
+      font-size: 1rem;
+      font-weight: 400;
+      background: rgba(255, 255, 255, 0.01);
       vertical-align: middle;
-      word-break: break-word; /* Allow long words to break */
+      word-break: break-word;
     }
 
     /* --- Specific Cell Styles for Readability --- */
     .dashboard-table td.agent-name {
-      color: var(--color-primary); /* Highlight agent names */
-      font-weight: 700;
-      font-size: 1rem;
-      background: rgba(var(--color-primary), 0.02);
+      color: var(--tiktok-cyan);
+      font-weight: 600;
+      font-size: 1.05rem;
+      background: rgba(37, 244, 238, 0.05);
       white-space: nowrap;
-      min-width: 150px; /* Ensure enough space */
+      min-width: 180px;
+      text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
     }
     .dashboard-table td.agent-email {
-      color: var(--color-text-dark);
-      font-weight: 500;
-      font-size: 0.9rem;
-      background: rgba(var(--color-primary), 0.01);
+      color: var(--tiktok-red);
+      font-weight: 400;
+      font-size: 0.95rem;
+      background: rgba(254, 44, 85, 0.05);
       word-break: break-all;
-      min-width: 180px;
+      min-width: 220px;
+      font-family: var(--font-mono);
+      text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
     }
 
     /* --- Grand Total --- */
     .grand-total {
-      font-weight: 800;
-      color: var(--color-accent);
-      background: rgba(var(--color-accent), 0.1);
+      font-weight: 700;
+      color: var(--tiktok-white);
+      background: linear-gradient(90deg, var(--tiktok-red) 0%, var(--tiktok-cyan) 100%);
       border-radius: var(--border-radius-sm);
-      padding: 8px 12px;
+      padding: 12px 16px;
       display: inline-block;
-      min-width: 60px;
+      min-width: 80px;
       text-align: center;
-      font-size: 1.05rem;
-      border: 1px solid rgba(var(--color-accent), 0.3);
-      text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
-      box-shadow: 0 2px 5px rgba(var(--color-accent), 0.1);
+      font-size: 1.15rem;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      text-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+      box-shadow: 0 3px 8px rgba(254, 44, 85, 0.3), 0 3px 8px rgba(37, 244, 238, 0.3);
     }
 
     /* --- No Data Message --- */
     .no-data {
       text-align: center;
-      padding: 40px 20px;
-      color: var(--color-text-dark);
-      font-size: 1.1rem;
-      font-weight: 600;
+      padding: 60px 30px;
+      color: var(--color-text-secondary);
+      font-size: 1.25rem;
+      font-weight: 500;
       border-radius: var(--border-radius-md);
-      margin: 20px auto;
-      background: var(--color-background-light);
-      box-shadow: 0 5px 15px var(--color-shadow-light);
-      border: 1px solid var(--color-border);
-      letter-spacing: 0.2px;
-      max-width: 500px;
+      margin: 30px auto;
+      background: var(--tiktok-dark-grey);
+      box-shadow: var(--shadow-tiktok);
+      border: 1px solid var(--color-border-subtle);
+      letter-spacing: 0.4px;
+      max-width: 700px;
     }
-    .no-data br { margin-bottom: 10px; }
+    .no-data br { margin-bottom: 15px; }
 
     /* --- Hourly Table Specific Styles --- */
     .hourly-main-header {
       background: var(--gradient-table-header) !important;
-      color: var(--color-text-dark) !important;
-      font-weight: 800 !important;
+      color: var(--tiktok-white) !important;
+      font-weight: 700 !important;
       text-align: center;
-      font-size: 1.05rem;
-      border-bottom: 2px solid var(--color-primary) !important;
+      font-size: 1.1rem;
+      border-bottom: 2px solid var(--tiktok-red) !important;
+      text-shadow: 1px 1px 0 var(--tiktok-red), -1px -1px 0 var(--tiktok-cyan);
     }
     .hourly-hourgroup, .hourly-hourgroup2 {
       background: var(--gradient-hourly-group1) !important;
-      color: var(--color-primary) !important;
+      color: var(--tiktok-red) !important;
       text-align: center;
-      font-weight: 700;
-      border-bottom: 1px solid rgba(var(--color-primary), 0.2) !important;
+      font-weight: 600;
+      border-bottom: 1px solid rgba(254, 44, 85, 0.2) !important;
+      font-family: var(--font-mono);
+      text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
     }
     .hourly-hourgroup2 {
       background: var(--gradient-hourly-group2) !important;
-      color: var(--color-accent) !important;
-      border-bottom: 1px solid rgba(var(--color-accent), 0.2) !important;
+      color: var(--tiktok-cyan) !important;
+      border-bottom: 1px solid rgba(37, 244, 238, 0.2) !important;
     }
     .hourly-subheader {
-      background: rgba(var(--color-background-light), 0.8) !important;
-      color: var(--color-text-dark) !important;
-      font-weight: 600;
+      background: rgba(255, 255, 255, 0.05) !important;
+      color: var(--color-text-secondary) !important;
+      font-weight: 500;
       text-align: center;
-      border-bottom: 1px solid #E0E6ED !important;
+      border-bottom: 1px solid var(--color-border-subtle) !important;
       font-size: 0.9rem;
-      padding: 10px 5px; /* Smaller padding for subheaders */
+      padding: 14px 8px;
     }
     .hourly-hourgroup .hourly-subheader, .hourly-hourgroup2 .hourly-subheader {
       background: inherit !important;
       color: inherit !important;
     }
     .hourly-metric {
-      color: var(--color-text-dark) !important;
-      font-weight: 600;
+      color: var(--tiktok-white) !important;
+      font-weight: 500;
       text-align: center;
-      font-size: 0.95rem;
-      background: rgba(var(--color-background-light), 0.7);
+      font-size: 1rem;
+      background: rgba(255, 255, 255, 0.02);
       border-radius: 4px;
-      min-width: 40px;
-      border: 1px solid #F0F2F5;
-      padding: 10px 8px;
+      min-width: 50px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 14px 12px;
+      font-family: var(--font-mono);
+      text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
     }
-    .hourly-metric0 { background: rgba(var(--color-primary), 0.05); }
-    .hourly-metric1 { background: rgba(var(--color-accent), 0.05); }
+    .hourly-metric0 { background: rgba(254, 44, 85, 0.1); }
+    .hourly-metric1 { background: rgba(37, 244, 238, 0.1); }
 
     .grand-total-hour {
-      background: var(--gradient-premium) !important;
-      color: var(--color-text-dark) !important; /* Darker font for grand total */
-      font-weight: 900;
+      background: linear-gradient(90deg, var(--tiktok-red) 0%, var(--tiktok-cyan) 100%) !important;
+      color: var(--tiktok-white) !important;
+      font-weight: 800;
       text-align: center;
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       border-radius: var(--border-radius-sm);
-      border: 2px solid rgba(255, 215, 0, 0.5);
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-      box-shadow: 0 2px 8px rgba(255, 215, 0, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      text-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+      box-shadow: 0 4px 12px rgba(254, 44, 85, 0.4), 0 4px 12px rgba(37, 244, 238, 0.4);
     }
 
     /* --- Responsive Adjustments --- */
+    @media (max-width: 1200px) {
+      .dashboard-container {
+        padding: 40px;
+        margin: 60px auto;
+      }
+      .dashboard-header h1 {
+        font-size: 3.2rem;
+      }
+      .premium-badge {
+        font-size: 1.2rem;
+        padding: 9px 22px;
+      }
+      .controls {
+        gap: 15px;
+        padding: 12px 18px;
+      }
+      .file-label, .datepicker, .search-input {
+        font-size: 1.05rem;
+        padding: 14px 18px;
+      }
+      .tab-group {
+        min-width: 300px;
+      }
+      .tab-btn {
+        font-size: 1.1rem;
+        padding: 16px 12px;
+      }
+      .capture-btn {
+        font-size: 1rem;
+        padding: 12px 22px;
+      }
+      .dashboard-table th, .dashboard-table td {
+        font-size: 0.95rem;
+        padding: 18px 22px;
+      }
+      .dashboard-table td.agent-name, .dashboard-table td.agent-email {
+        font-size: 1.0rem;
+      }
+      .grand-total, .grand-total-hour {
+        font-size: 1.1rem;
+        padding: 10px 14px;
+      }
+      .no-data {
+        padding: 50px 25px;
+        font-size: 1.2rem;
+      }
+    }
+
     @media (max-width: 992px) {
       .dashboard-container {
-        margin: 30px auto;
         padding: 30px;
+        margin: 40px auto;
       }
       .dashboard-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 15px;
+        gap: 20px;
       }
       .dashboard-header h1 {
-        font-size: 2.2rem;
+        font-size: 2.8rem;
       }
       .premium-badge {
         margin-left: 0;
         margin-top: 10px;
-        font-size: 0.9rem;
-        padding: 6px 15px;
+        font-size: 1rem;
+        padding: 8px 18px;
       }
       .controls {
         flex-direction: column;
         align-items: stretch;
         padding: 10px;
         width: 100%;
-        justify-content: center;
       }
       .file-label, .datepicker, .search-input {
         width: 100%;
         min-width: unset;
+        font-size: 1rem;
+        padding: 12px 15px;
       }
       .tab-bar {
         flex-direction: column;
-        border-radius: var(--border-radius-md);
         padding: 10px;
       }
       .tab-group {
         flex-direction: column;
         width: 100%;
         min-width: unset;
+        margin: 5px 0;
       }
       .tab-btn {
-        border-bottom: 1px solid var(--color-border);
+        border-bottom: 1px solid var(--color-border-subtle);
         border-radius: 0;
-        padding: 12px 10px;
+        padding: 14px 10px;
       }
       .tab-btn:last-child {
         border-bottom: none;
@@ -517,58 +632,97 @@
         margin-left: 0;
         margin-top: 10px;
         width: 100%;
-        font-size: 0.9rem;
-        padding: 10px 15px;
+        font-size: 0.95rem;
+        padding: 12px 18px;
       }
       .dashboard-table th, .dashboard-table td {
         font-size: 0.85rem;
-        padding: 12px 15px;
+        padding: 15px 18px;
       }
       .dashboard-table td.agent-name, .dashboard-table td.agent-email {
         font-size: 0.9rem;
       }
       .grand-total, .grand-total-hour {
-        font-size: 0.9rem;
-        padding: 6px 10px;
+        font-size: 1rem;
+        padding: 8px 12px;
       }
       .no-data {
-        padding: 25px 15px;
-        font-size: 1rem;
+        padding: 40px 20px;
+        font-size: 1.1rem;
       }
     }
 
-    @media (max-width: 600px) {
+    @media (max-width: 768px) {
       .dashboard-container {
         padding: 20px;
-        margin: 20px auto;
+        margin: 30px auto;
       }
       .dashboard-header h1 {
-        font-size: 1.8rem;
+        font-size: 2.2rem;
+        letter-spacing: 1.5px;
       }
       .premium-badge {
-        font-size: 0.8rem;
-        padding: 5px 12px;
+        font-size: 0.9rem;
+        padding: 6px 15px;
       }
       .file-label, .datepicker, .search-input, .tab-btn, .capture-btn {
         font-size: 0.9rem;
         padding: 10px 15px;
       }
       .dashboard-table {
-        min-width: 400px; /* Allow more aggressive shrinking */
+        min-width: 500px;
       }
       .dashboard-table th, .dashboard-table td {
         font-size: 0.8rem;
-        padding: 10px 12px;
+        padding: 12px 15px;
       }
       .dashboard-table td.agent-name, .dashboard-table td.agent-email {
         font-size: 0.85rem;
       }
       .hourly-subheader {
         font-size: 0.8rem;
-        padding: 8px 3px;
+        padding: 10px 5px;
       }
       .hourly-metric {
         font-size: 0.85rem;
+        min-width: 40px;
+        padding: 10px 8px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .dashboard-container {
+        padding: 15px;
+        margin: 20px auto;
+      }
+      .dashboard-header h1 {
+        font-size: 1.8rem;
+        letter-spacing: 1px;
+      }
+      .premium-badge {
+        font-size: 0.75rem;
+        padding: 4px 10px;
+      }
+      .file-label, .datepicker, .search-input, .tab-btn, .capture-btn {
+        font-size: 0.85rem;
+        padding: 10px 12px;
+      }
+      .dashboard-table {
+        min-width: 350px;
+      }
+      .dashboard-table th, .dashboard-table td {
+        font-size: 0.75rem;
+        padding: 10px 12px;
+      }
+      .dashboard-table td.agent-name, .dashboard-table td.agent-email {
+        font-size: 0.8rem;
+      }
+      .hourly-subheader {
+        font-size: 0.75rem;
+        padding: 8px 3px;
+      }
+      .hourly-metric {
+        font-size: 0.8rem;
         min-width: 30px;
         padding: 8px 5px;
       }
@@ -657,19 +811,29 @@
         return;
       }
 
+      // Store original styles
       const originalOverflowX = tableWrapper.style.overflowX;
+      const originalTableWidth = tableElement.style.width;
+      const originalTableMinWidth = tableElement.style.minWidth;
+
+      // Temporarily adjust styles for full capture
       tableWrapper.style.overflowX = 'visible';
+      tableElement.style.width = 'max-content'; // Force table to render its full content width
+      tableElement.style.minWidth = 'max-content'; // Ensure min-width doesn't restrict it
 
       html2canvas(tableElement, {
-        backgroundColor: null,
-        scale: 2,
+        backgroundColor: getComputedStyle(document.body).backgroundColor, // Use the actual computed background of the body
+        scale: 2, // Increase scale for higher resolution
         useCORS: true,
         scrollX: 0,
         scrollY: 0,
-        windowWidth: tableElement.scrollWidth,
-        windowHeight: tableElement.scrollHeight
+        windowWidth: tableElement.scrollWidth, // Capture the full scroll width
+        windowHeight: tableElement.scrollHeight // Capture the full scroll height
       }).then(canvas => {
+        // Restore original styles
         tableWrapper.style.overflowX = originalOverflowX;
+        tableElement.style.width = originalTableWidth;
+        tableElement.style.minWidth = originalTableMinWidth;
 
         if (navigator.clipboard && navigator.clipboard.write) {
           canvas.toBlob(function(blob) {
@@ -685,7 +849,10 @@
           alert('Your browser does not support copying images directly to the clipboard. Please right-click on the table and select "Copy Image" or use the download option if available.');
         }
       }).catch(error => {
+        // Ensure styles are restored even if an error occurs
         tableWrapper.style.overflowX = originalOverflowX;
+        tableElement.style.width = originalTableWidth;
+        tableElement.style.minWidth = originalTableMinWidth;
         console.error('Error capturing table:', error);
         alert('An error occurred while capturing the table.');
       });
